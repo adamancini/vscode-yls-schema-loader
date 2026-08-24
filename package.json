@@ -65,7 +65,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./",
     "pretest": "npm run compile",
-    "test:unit": "mocha \"out/src/lib/**/*.test.js\"",
+    "test:unit": "test -z \"$(find out/src/lib -name '*.test.js' 2>/dev/null)\" && echo 'no unit tests yet' || mocha \"out/src/lib/**/*.test.js\"",
     "test:integration": "vscode-test",
     "test": "npm run test:unit && npm run test:integration"
   },
