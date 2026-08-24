@@ -1,0 +1,85 @@
+{
+  "name": "yls-schema-loader",
+  "displayName": "YLS Schema Loader",
+  "description": "Discovers yaml-language-server schemas for Kubernetes-style YAML documents and helps wire them up.",
+  "version": "0.1.0",
+  "publisher": "adamancini",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onLanguage:yaml"],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ylsSchemaLoader.insertSchemaForCurrentDocument",
+        "title": "YLS Schema Loader: Insert Schema for Current Document"
+      }
+    ],
+    "configuration": {
+      "title": "YLS Schema Loader",
+      "properties": {
+        "ylsSchemaLoader.insertionMode": {
+          "type": "string",
+          "enum": ["comment", "yamlSchemas", "both"],
+          "default": "comment",
+          "description": "What to write when a schema is resolved: an inline yaml-language-server comment, a yaml.schemas entry, or both."
+        },
+        "ylsSchemaLoader.enableWebDiscovery": {
+          "type": "boolean",
+          "default": true,
+          "description": "Search GitHub for a matching schema when no bundled mapping or cached resolution exists."
+        },
+        "ylsSchemaLoader.additionalMappings": {
+          "type": "array",
+          "default": [],
+          "description": "User/workspace overrides merged on top of the bundled kind/apiVersion to schema URL mapping.",
+          "items": {
+            "type": "object",
+            "required": ["kind", "apiVersion", "url"],
+            "properties": {
+              "kind": { "type": "string" },
+              "apiVersion": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "ylsSchemaLoader.githubRepoHints": {
+          "type": "array",
+          "default": [],
+          "description": "Explicit apiVersion-group to org/repo overrides for cases the GitHub heuristic guesses wrong.",
+          "items": {
+            "type": "object",
+            "required": ["group", "repo"],
+            "properties": {
+              "group": { "type": "string", "description": "The apiVersion group, e.g. kargo.akuity.io" },
+              "repo": { "type": "string", "description": "org/repo, e.g. akuity/kargo" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "pretest": "npm run compile",
+    "test:unit": "mocha \"out/src/lib/**/*.test.js\"",
+    "test:integration": "vscode-test",
+    "test": "npm run test:unit && npm run test:integration"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.3.9",
+    "mocha": "^10.3.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "minimatch": "^9.0.4",
+    "yaml": "^2.4.1"
+  }
+}

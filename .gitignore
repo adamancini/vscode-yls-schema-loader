@@ -1,1 +1,5 @@
 .superpowers/
+out/
+node_modules/
+*.vsix
+test/fixtures/.vscode/
