@@ -60,4 +60,12 @@ suite('resolveSchema', () => {
     const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps());
     assert.deepStrictEqual(result, { source: 'unresolved' });
   });
+
+  test('returns unresolved when fetchFn throws (network failure)', async () => {
+    const fetchFn: FetchFn = async () => {
+      throw new Error('network down');
+    };
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ fetchFn }));
+    assert.deepStrictEqual(result, { source: 'unresolved' });
+  });
 });

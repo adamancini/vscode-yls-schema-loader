@@ -39,9 +39,14 @@ export async function resolveSchema(kind: string, apiVersion: string, deps: Reso
     return { source: 'unresolved' };
   }
 
-  const candidates = await discoverGithubSchema(kind, apiVersion, deps.githubHints, deps.fetchFn, deps.authToken);
-  if (candidates.length > 0) {
-    return { source: 'github', candidates };
+  try {
+    const candidates = await discoverGithubSchema(kind, apiVersion, deps.githubHints, deps.fetchFn, deps.authToken);
+    if (candidates.length > 0) {
+      return { source: 'github', candidates };
+    }
+  } catch {
+    // GitHub API failure (network error, rate limit, auth failure): treat as no candidate found
+    // This ensures the resolver pipeline never throws, allowing callers to handle gracefully
   }
   return { source: 'unresolved' };
 }
