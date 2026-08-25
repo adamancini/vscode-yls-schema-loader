@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import {
   getInsertionMode,
   getEnableWebDiscovery,
@@ -9,6 +10,18 @@ import {
 import { getGithubAuthToken } from '../../src/githubAuth';
 
 suite('settings', () => {
+  // Other test files write to these same workspace-scoped settings (e.g.
+  // applySchema.test.ts's insertionMode/yaml.schemas tests) and reset them in their own
+  // teardown -- but mocha's file load order isn't guaranteed alphabetical, so this test
+  // can't rely on running before or after any of them. Reset explicitly instead of
+  // depending on execution order.
+  setup(async () => {
+    await vscode.workspace
+      .getConfiguration('ylsSchemaLoader')
+      .update('insertionMode', undefined, vscode.ConfigurationTarget.Workspace);
+    await vscode.workspace.getConfiguration('yaml').update('schemas', undefined, vscode.ConfigurationTarget.Workspace);
+  });
+
   test('returns documented defaults when nothing is configured', () => {
     assert.strictEqual(getInsertionMode(), 'comment');
     assert.strictEqual(getEnableWebDiscovery(), true);
