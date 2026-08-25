@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://example.com/schema.json
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: covered-example
