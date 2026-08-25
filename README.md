@@ -32,8 +32,31 @@ extension automates the lookup.
 
 ## Bundled schemas
 
-- ArgoCD `ApplicationSet` (`argoproj.io/v1alpha1`)
-- Kargo `Stage`, `Warehouse`, `Promotion` (`kargo.akuity.io/v1alpha1`)
+45 kind/apiVersion pairs across the following ecosystems, grouped by
+project:
+
+- **Kargo** (`kargo.akuity.io/v1alpha1`) — all resource kinds: `Stage`,
+  `Warehouse`, `Promotion`, `ClusterConfig`, `ClusterPromotionTask`,
+  `Freight`, `Project`, `ProjectConfig`, `PromotionRequest`,
+  `PromotionTask`, `Target`.
+- **ArgoCD ecosystem** (`argoproj.io/v1alpha1`) — Argo CD (`Application`,
+  `AppProject`, `ApplicationSet`), Argo Rollouts (`Rollout`,
+  `AnalysisTemplate`, `ClusterAnalysisTemplate`, `AnalysisRun`,
+  `Experiment`), Argo Workflows (`Workflow`, `WorkflowTemplate`,
+  `ClusterWorkflowTemplate`, `CronWorkflow`), and Argo Events (`EventBus`,
+  `EventSource`, `Sensor`).
+- **Flux** — `GitRepository`, `HelmRepository`, `OCIRepository`, `Bucket`
+  (`source.toolkit.fluxcd.io/v1`), `Kustomization`
+  (`kustomize.toolkit.fluxcd.io/v1`), `HelmRelease`
+  (`helm.toolkit.fluxcd.io/v2`).
+- **Istio** — `VirtualService`, `Gateway`, `DestinationRule`,
+  `ServiceEntry`, `Sidecar` (`networking.istio.io/v1`), plus
+  `PeerAuthentication`, `AuthorizationPolicy`, `RequestAuthentication`
+  (`security.istio.io/v1`).
+- **Cilium** (`cilium.io/v2`) — `CiliumNetworkPolicy`,
+  `CiliumClusterwideNetworkPolicy`.
+- **cert-manager** (`cert-manager.io/v1`) — `Certificate`,
+  `ClusterIssuer`, `Issuer`.
 
 Anything else falls through to GitHub discovery, or you can extend the
 mapping yourself with `ylsSchemaLoader.additionalMappings`.

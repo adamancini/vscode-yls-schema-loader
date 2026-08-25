@@ -18,5 +18,210 @@
     "kind": "ApplicationSet",
     "apiVersion": "argoproj.io/v1alpha1",
     "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/applicationset_v1alpha1.json"
+  },
+  {
+    "kind": "ClusterConfig",
+    "apiVersion": "kargo.akuity.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/clusterconfigs.kargo.akuity.io_v1alpha1.json"
+  },
+  {
+    "kind": "ClusterPromotionTask",
+    "apiVersion": "kargo.akuity.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/clusterpromotiontasks.kargo.akuity.io_v1alpha1.json"
+  },
+  {
+    "kind": "Freight",
+    "apiVersion": "kargo.akuity.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/freights.kargo.akuity.io_v1alpha1.json"
+  },
+  {
+    "kind": "Project",
+    "apiVersion": "kargo.akuity.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/projects.kargo.akuity.io_v1alpha1.json"
+  },
+  {
+    "kind": "ProjectConfig",
+    "apiVersion": "kargo.akuity.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/projectconfigs.kargo.akuity.io_v1alpha1.json"
+  },
+  {
+    "kind": "PromotionRequest",
+    "apiVersion": "kargo.akuity.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/promotionrequests.kargo.akuity.io_v1alpha1.json"
+  },
+  {
+    "kind": "PromotionTask",
+    "apiVersion": "kargo.akuity.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/promotiontasks.kargo.akuity.io_v1alpha1.json"
+  },
+  {
+    "kind": "Target",
+    "apiVersion": "kargo.akuity.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/targets.kargo.akuity.io_v1alpha1.json"
+  },
+  {
+    "kind": "Application",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json"
+  },
+  {
+    "kind": "AppProject",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/appproject_v1alpha1.json"
+  },
+  {
+    "kind": "Rollout",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/rollout_v1alpha1.json"
+  },
+  {
+    "kind": "AnalysisTemplate",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/analysistemplate_v1alpha1.json"
+  },
+  {
+    "kind": "ClusterAnalysisTemplate",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/clusteranalysistemplate_v1alpha1.json"
+  },
+  {
+    "kind": "AnalysisRun",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/analysisrun_v1alpha1.json"
+  },
+  {
+    "kind": "Experiment",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/experiment_v1alpha1.json"
+  },
+  {
+    "kind": "Workflow",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/workflow_v1alpha1.json"
+  },
+  {
+    "kind": "WorkflowTemplate",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/workflowtemplate_v1alpha1.json"
+  },
+  {
+    "kind": "ClusterWorkflowTemplate",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/clusterworkflowtemplate_v1alpha1.json"
+  },
+  {
+    "kind": "CronWorkflow",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/cronworkflow_v1alpha1.json"
+  },
+  {
+    "kind": "EventBus",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/eventbus_v1alpha1.json"
+  },
+  {
+    "kind": "EventSource",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/eventsource_v1alpha1.json"
+  },
+  {
+    "kind": "Sensor",
+    "apiVersion": "argoproj.io/v1alpha1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/sensor_v1alpha1.json"
+  },
+  {
+    "kind": "GitRepository",
+    "apiVersion": "source.toolkit.fluxcd.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/source.toolkit.fluxcd.io/gitrepository_v1.json"
+  },
+  {
+    "kind": "HelmRepository",
+    "apiVersion": "source.toolkit.fluxcd.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/source.toolkit.fluxcd.io/helmrepository_v1.json"
+  },
+  {
+    "kind": "OCIRepository",
+    "apiVersion": "source.toolkit.fluxcd.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/source.toolkit.fluxcd.io/ocirepository_v1.json"
+  },
+  {
+    "kind": "Bucket",
+    "apiVersion": "source.toolkit.fluxcd.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/source.toolkit.fluxcd.io/bucket_v1.json"
+  },
+  {
+    "kind": "Kustomization",
+    "apiVersion": "kustomize.toolkit.fluxcd.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/kustomize.toolkit.fluxcd.io/kustomization_v1.json"
+  },
+  {
+    "kind": "HelmRelease",
+    "apiVersion": "helm.toolkit.fluxcd.io/v2",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/helm.toolkit.fluxcd.io/helmrelease_v2.json"
+  },
+  {
+    "kind": "VirtualService",
+    "apiVersion": "networking.istio.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/networking.istio.io/virtualservice_v1.json"
+  },
+  {
+    "kind": "Gateway",
+    "apiVersion": "networking.istio.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/networking.istio.io/gateway_v1.json"
+  },
+  {
+    "kind": "DestinationRule",
+    "apiVersion": "networking.istio.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/networking.istio.io/destinationrule_v1.json"
+  },
+  {
+    "kind": "ServiceEntry",
+    "apiVersion": "networking.istio.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/networking.istio.io/serviceentry_v1.json"
+  },
+  {
+    "kind": "Sidecar",
+    "apiVersion": "networking.istio.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/networking.istio.io/sidecar_v1.json"
+  },
+  {
+    "kind": "PeerAuthentication",
+    "apiVersion": "security.istio.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/security.istio.io/peerauthentication_v1.json"
+  },
+  {
+    "kind": "AuthorizationPolicy",
+    "apiVersion": "security.istio.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/security.istio.io/authorizationpolicy_v1.json"
+  },
+  {
+    "kind": "RequestAuthentication",
+    "apiVersion": "security.istio.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/security.istio.io/requestauthentication_v1.json"
+  },
+  {
+    "kind": "CiliumNetworkPolicy",
+    "apiVersion": "cilium.io/v2",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumnetworkpolicy_v2.json"
+  },
+  {
+    "kind": "CiliumClusterwideNetworkPolicy",
+    "apiVersion": "cilium.io/v2",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumclusterwidenetworkpolicy_v2.json"
+  },
+  {
+    "kind": "Certificate",
+    "apiVersion": "cert-manager.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cert-manager.io/certificate_v1.json"
+  },
+  {
+    "kind": "ClusterIssuer",
+    "apiVersion": "cert-manager.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cert-manager.io/clusterissuer_v1.json"
+  },
+  {
+    "kind": "Issuer",
+    "apiVersion": "cert-manager.io/v1",
+    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cert-manager.io/issuer_v1.json"
   }
 ]

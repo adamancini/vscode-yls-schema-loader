@@ -44,4 +44,36 @@ suite('bundledMappingData seed content', () => {
       'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/stages.kargo.akuity.io_v1alpha1.json'
     );
   });
+
+  test('includes the Kargo Freight schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'Freight', 'kargo.akuity.io/v1alpha1');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/freights.kargo.akuity.io_v1alpha1.json'
+    );
+  });
+
+  test('includes the Argo Rollouts Rollout schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'Rollout', 'argoproj.io/v1alpha1');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/rollout_v1alpha1.json'
+    );
+  });
+
+  test('includes the Flux HelmRelease schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'HelmRelease', 'helm.toolkit.fluxcd.io/v2');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/helm.toolkit.fluxcd.io/helmrelease_v2.json'
+    );
+  });
+
+  test('includes the cert-manager Certificate schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'Certificate', 'cert-manager.io/v1');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cert-manager.io/certificate_v1.json'
+    );
+  });
 });
