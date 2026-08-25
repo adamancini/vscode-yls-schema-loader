@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1
+
+- The shipped extension is now a single esbuild bundle instead of the raw
+  compiled source plus `node_modules` — the packaged `.vsix` dropped from
+  298 files / 339KB to 7 files / 55KB.
+- Diagnostics re-checking on document edits is now debounced (300ms) instead
+  of re-parsing and re-checking coverage on every keystroke.
+- Added ESLint and Prettier for ongoing code quality; no functional changes.
+
 ## 0.2.0
 
 - Bundled mapping expanded from 4 to 45 entries: full Kargo CRD coverage
