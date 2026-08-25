@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { SchemaCodeActionProvider } from '../../src/codeActionsProvider';
 import { DIAGNOSTIC_SOURCE } from '../../src/diagnosticsProvider';
 import { INSERT_SCHEMA_COMMAND } from '../../src/commandIds';
+import { waitFor } from './testUtils';
 
 const KARGO_STAGE_SCHEMA_URL =
   'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/stages.kargo.akuity.io_v1alpha1.json';
@@ -59,7 +60,7 @@ suite('SchemaCodeActionProvider (registered, headless)', () => {
     const uri = vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'uncovered.yaml'));
     const doc = await vscode.workspace.openTextDocument(uri);
     await vscode.window.showTextDocument(doc);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await waitFor(() => vscode.languages.getDiagnostics(uri).some((d) => d.source === DIAGNOSTIC_SOURCE));
     const range = new vscode.Range(0, 0, Math.min(3, doc.lineCount - 1), 0);
     const actions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
       'vscode.executeCodeActionProvider',
@@ -82,7 +83,8 @@ suite('insertSchemaForCurrentDocument command', () => {
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(1, 0, 1, 0);
     await vscode.commands.executeCommand('ylsSchemaLoader.insertSchemaForCurrentDocument');
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    assert.strictEqual(doc.lineAt(0).text, `# yaml-language-server: $schema=${KARGO_STAGE_SCHEMA_URL}`);
+    const expectedLine = `# yaml-language-server: $schema=${KARGO_STAGE_SCHEMA_URL}`;
+    await waitFor(() => doc.lineAt(0).text === expectedLine);
+    assert.strictEqual(doc.lineAt(0).text, expectedLine);
   });
 });
