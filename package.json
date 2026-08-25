@@ -57,6 +57,11 @@
               "repo": { "type": "string", "description": "org/repo, e.g. akuity/kargo" }
             }
           }
+        },
+        "yaml.schemas": {
+          "type": "object",
+          "default": {},
+          "description": "Maps schema URLs/paths to glob patterns of files they apply to. Owned by the yaml-language-server extension (redhat.vscode-yaml); declared here too so ylsSchemaLoader can read and append entries to it even when that extension isn't installed."
         }
       }
     }
