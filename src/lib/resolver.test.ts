@@ -1,0 +1,63 @@
+import * as assert from 'assert';
+import { resolveSchema, sessionCacheKey, ResolverDeps } from './resolver';
+import { MappingEntry } from './bundledMapping';
+import { FetchFn } from './githubDiscovery';
+
+function baseDeps(overrides: Partial<ResolverDeps> = {}): ResolverDeps {
+  return {
+    bundledEntries: [],
+    sessionCache: new Map<string, string>(),
+    enableWebDiscovery: true,
+    githubHints: [],
+    fetchFn: (async () => ({ ok: false, status: 404, json: async () => ({}) })) as FetchFn,
+    authToken: undefined,
+    ...overrides,
+  };
+}
+
+suite('resolveSchema', () => {
+  test('resolves from the bundled mapping first', async () => {
+    const bundledEntries: MappingEntry[] = [
+      { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url: 'https://bundled.example.com/stage.json' },
+    ];
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ bundledEntries }));
+    assert.deepStrictEqual(result, { source: 'bundled', url: 'https://bundled.example.com/stage.json' });
+  });
+
+  test('resolves from the session cache when not in the bundled mapping', async () => {
+    const sessionCache = new Map<string, string>();
+    sessionCache.set(sessionCacheKey('Stage', 'kargo.akuity.io/v1alpha1'), 'https://cached.example.com/stage.json');
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ sessionCache }));
+    assert.deepStrictEqual(result, { source: 'sessionCache', url: 'https://cached.example.com/stage.json' });
+  });
+
+  test('returns unresolved when web discovery is disabled and nothing else matches', async () => {
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ enableWebDiscovery: false }));
+    assert.deepStrictEqual(result, { source: 'unresolved' });
+  });
+
+  test('falls through to github discovery when nothing else matches', async () => {
+    const hitUrl = 'https://api.github.com/repos/akuity/kargo/contents/schemas.json';
+    const fetchFn: FetchFn = async (url: string) => {
+      if (url === hitUrl) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ download_url: 'https://raw.githubusercontent.com/akuity/kargo/HEAD/schemas.json' }),
+        };
+      }
+      return { ok: false, status: 404, json: async () => ({}) };
+    };
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ fetchFn }));
+    assert.strictEqual(result.source, 'github');
+    if (result.source === 'github') {
+      assert.strictEqual(result.candidates.length, 1);
+      assert.strictEqual(result.candidates[0].url, 'https://raw.githubusercontent.com/akuity/kargo/HEAD/schemas.json');
+    }
+  });
+
+  test('returns unresolved when github discovery finds nothing', async () => {
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps());
+    assert.deepStrictEqual(result, { source: 'unresolved' });
+  });
+});
