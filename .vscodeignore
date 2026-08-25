@@ -1,0 +1,14 @@
+.vscode-test.mjs
+.mocharc.json
+tsconfig.json
+.gitignore
+
+docs/**
+src/**
+test/**
+
+out/test/**
+out/**/*.test.js
+out/**/*.js.map
+
+**/*.map
