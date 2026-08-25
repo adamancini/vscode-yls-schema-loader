@@ -10,7 +10,7 @@ function baseDeps(overrides: Partial<ResolverDeps> = {}): ResolverDeps {
     enableWebDiscovery: true,
     githubHints: [],
     fetchFn: (async () => ({ ok: false, status: 404, json: async () => ({}) })) as FetchFn,
-    authToken: undefined,
+    getAuthToken: async () => undefined,
     ...overrides,
   };
 }
@@ -61,11 +61,91 @@ suite('resolveSchema', () => {
     assert.deepStrictEqual(result, { source: 'unresolved' });
   });
 
-  test('returns unresolved when fetchFn throws (network failure)', async () => {
+  test('returns an error resolution when fetchFn throws (network failure)', async () => {
     const fetchFn: FetchFn = async () => {
       throw new Error('network down');
     };
     const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ fetchFn }));
-    assert.deepStrictEqual(result, { source: 'unresolved' });
+    assert.strictEqual(result.source, 'error');
+    if (result.source === 'error') {
+      assert.match(result.message, /network down/);
+    }
+  });
+
+  test('returns an error resolution when GitHub rate-limits every request', async () => {
+    const fetchFn: FetchFn = async () => ({ ok: false, status: 403, json: async () => ({ message: 'rate limit exceeded' }) });
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ fetchFn }));
+    assert.strictEqual(result.source, 'error');
+    if (result.source === 'error') {
+      assert.match(result.message, /rate limit/i);
+    }
+  });
+
+  test('never calls getAuthToken for a bundled-mapping hit', async () => {
+    let called = false;
+    const bundledEntries: MappingEntry[] = [
+      { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url: 'https://bundled.example.com/stage.json' },
+    ];
+    await resolveSchema(
+      'Stage',
+      'kargo.akuity.io/v1alpha1',
+      baseDeps({
+        bundledEntries,
+        getAuthToken: async () => {
+          called = true;
+          return undefined;
+        },
+      })
+    );
+    assert.strictEqual(called, false);
+  });
+
+  test('never calls getAuthToken for a session-cache hit', async () => {
+    let called = false;
+    const sessionCache = new Map<string, string>();
+    sessionCache.set(sessionCacheKey('Stage', 'kargo.akuity.io/v1alpha1'), 'https://cached.example.com/stage.json');
+    await resolveSchema(
+      'Stage',
+      'kargo.akuity.io/v1alpha1',
+      baseDeps({
+        sessionCache,
+        getAuthToken: async () => {
+          called = true;
+          return undefined;
+        },
+      })
+    );
+    assert.strictEqual(called, false);
+  });
+
+  test('never calls getAuthToken when web discovery is disabled', async () => {
+    let called = false;
+    await resolveSchema(
+      'Stage',
+      'kargo.akuity.io/v1alpha1',
+      baseDeps({
+        enableWebDiscovery: false,
+        getAuthToken: async () => {
+          called = true;
+          return undefined;
+        },
+      })
+    );
+    assert.strictEqual(called, false);
+  });
+
+  test('calls getAuthToken when discovery is actually about to run', async () => {
+    let called = false;
+    await resolveSchema(
+      'Stage',
+      'kargo.akuity.io/v1alpha1',
+      baseDeps({
+        getAuthToken: async () => {
+          called = true;
+          return undefined;
+        },
+      })
+    );
+    assert.strictEqual(called, true);
   });
 });

@@ -5,6 +5,15 @@ export interface GithubCandidate {
   description: string;
 }
 
+export interface DiscoveryResult {
+  candidates: GithubCandidate[];
+  // True only when discovery ended with zero candidates AND at least one request hit a
+  // rate-limit-shaped response (403/429) along the way -- distinguishes "GitHub said no"
+  // from "GitHub couldn't be asked". A rate limit seen on an earlier probe is irrelevant
+  // once a later one succeeds, so this only reflects the final, no-candidates outcome.
+  rateLimited: boolean;
+}
+
 export type FetchFn = (
   url: string,
   init?: { headers?: Record<string, string> }
@@ -22,22 +31,27 @@ function pluralize(kind: string): string {
   return lower.endsWith('s') ? lower : `${lower}s`;
 }
 
+function isRateLimitStatus(status: number): boolean {
+  return status === 403 || status === 429;
+}
+
 export async function discoverGithubSchema(
   kind: string,
   apiVersion: string,
   hints: RepoHint[],
   fetchFn: FetchFn,
   authToken: string | undefined
-): Promise<GithubCandidate[]> {
+): Promise<DiscoveryResult> {
   const guess = deriveRepoFromApiVersion(apiVersion, hints);
   if (!guess) {
-    return [];
+    return { candidates: [], rateLimited: false };
   }
 
   const [group, version] = apiVersion.split('/');
   const kindPlural = pluralize(kind);
   const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
   const candidates: GithubCandidate[] = [];
+  let sawRateLimit = false;
 
   for (const template of CANDIDATE_PATH_TEMPLATES) {
     const path = template
@@ -51,10 +65,12 @@ export async function discoverGithubSchema(
       if (body.download_url) {
         candidates.push({ url: body.download_url, description: `${guess.org}/${guess.repo}: ${path}` });
       }
+    } else if (isRateLimitStatus(response.status)) {
+      sawRateLimit = true;
     }
   }
   if (candidates.length > 0) {
-    return candidates;
+    return { candidates, rateLimited: false };
   }
 
   const searchUrl = `https://api.github.com/search/code?q=${encodeURIComponent(kind)}+schema+repo:${guess.org}/${guess.repo}`;
@@ -65,6 +81,8 @@ export async function discoverGithubSchema(
       const rawUrl = `https://raw.githubusercontent.com/${guess.org}/${guess.repo}/HEAD/${item.path}`;
       candidates.push({ url: rawUrl, description: `${guess.org}/${guess.repo}: ${item.path} (via code search)` });
     }
+  } else if (isRateLimitStatus(searchResponse.status)) {
+    sawRateLimit = true;
   }
-  return candidates;
+  return { candidates, rateLimited: candidates.length === 0 && sawRateLimit };
 }

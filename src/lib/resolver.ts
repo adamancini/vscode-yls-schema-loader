@@ -6,7 +6,8 @@ export type Resolution =
   | { source: 'bundled'; url: string }
   | { source: 'sessionCache'; url: string }
   | { source: 'github'; candidates: GithubCandidate[] }
-  | { source: 'unresolved' };
+  | { source: 'unresolved' }
+  | { source: 'error'; message: string };
 
 export interface ResolverDeps {
   bundledEntries: MappingEntry[];
@@ -17,7 +18,10 @@ export interface ResolverDeps {
   enableWebDiscovery: boolean;
   githubHints: RepoHint[];
   fetchFn: FetchFn;
-  authToken: string | undefined;
+  // Lazy: only called when discovery is actually about to run (not for bundled/session-cache
+  // hits, and not when web discovery is disabled), so a bundled-mapping match never probes
+  // for a GitHub session at all.
+  getAuthToken: () => Promise<string | undefined>;
 }
 
 export function sessionCacheKey(kind: string, apiVersion: string): string {
@@ -40,13 +44,27 @@ export async function resolveSchema(kind: string, apiVersion: string, deps: Reso
   }
 
   try {
-    const candidates = await discoverGithubSchema(kind, apiVersion, deps.githubHints, deps.fetchFn, deps.authToken);
+    const authToken = await deps.getAuthToken();
+    const { candidates, rateLimited } = await discoverGithubSchema(
+      kind,
+      apiVersion,
+      deps.githubHints,
+      deps.fetchFn,
+      authToken
+    );
     if (candidates.length > 0) {
       return { source: 'github', candidates };
     }
-  } catch {
-    // GitHub API failure (network error, rate limit, auth failure): treat as no candidate found
-    // This ensures the resolver pipeline never throws, allowing callers to handle gracefully
+    if (rateLimited) {
+      return {
+        source: 'error',
+        message: 'GitHub API rate limit reached while searching for a schema. Sign in to GitHub for a higher limit, or try again later.',
+      };
+    }
+  } catch (err) {
+    // A rejected fetchFn call (network down, DNS failure) -- not an HTTP error response,
+    // which resolves normally via response.ok/response.status and is handled above.
+    return { source: 'error', message: `GitHub schema search failed: ${err instanceof Error ? err.message : String(err)}` };
   }
   return { source: 'unresolved' };
 }
