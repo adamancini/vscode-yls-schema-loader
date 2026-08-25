@@ -54,6 +54,25 @@ suite('SchemaCodeActionProvider', () => {
   });
 });
 
+suite('SchemaCodeActionProvider (registered, headless)', () => {
+  test('vscode.executeCodeActionProvider returns the insert-schema quick-fix for the uncovered fixture', async () => {
+    const uri = vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'uncovered.yaml'));
+    const doc = await vscode.workspace.openTextDocument(uri);
+    await vscode.window.showTextDocument(doc);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const range = new vscode.Range(0, 0, Math.min(3, doc.lineCount - 1), 0);
+    const actions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
+      'vscode.executeCodeActionProvider',
+      uri,
+      range
+    );
+    assert.ok(
+      actions?.some((action) => action.title === 'Insert yaml-language-server schema'),
+      'expected a code action titled "Insert yaml-language-server schema"'
+    );
+  });
+});
+
 suite('insertSchemaForCurrentDocument command', () => {
   test('resolves the document under the cursor', async () => {
     const uri = vscode.Uri.file(
