@@ -4,6 +4,15 @@
   "description": "Discovers yaml-language-server schemas for Kubernetes-style YAML documents and helps wire them up.",
   "version": "0.1.0",
   "publisher": "adamancini",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adamancini/vscode-yls-schema-loader.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adamancini/vscode-yls-schema-loader/issues"
+  },
+  "homepage": "https://github.com/adamancini/vscode-yls-schema-loader#readme",
   "engines": {
     "vscode": "^1.90.0"
   },

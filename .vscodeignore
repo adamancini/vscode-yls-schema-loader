@@ -3,6 +3,11 @@
 tsconfig.json
 .gitignore
 
+# Workspace settings written here by integration tests (the test harness
+# opens this repo root as the test workspace folder) — never shipped, always
+# stale by the time you'd package.
+.vscode/**
+
 docs/**
 src/**
 test/**
