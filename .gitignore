@@ -1,6 +1,7 @@
 .superpowers/
 .codebase-memory/
 out/
+dist/
 node_modules/
 *.vsix
 test/fixtures/.vscode/

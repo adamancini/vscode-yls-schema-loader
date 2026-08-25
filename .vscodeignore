@@ -1,3 +1,4 @@
+esbuild.js
 .vscode-test.mjs
 .mocharc.json
 tsconfig.json
@@ -18,8 +19,11 @@ docs/**
 src/**
 test/**
 
-out/test/**
-out/**/*.test.js
-out/**/*.js.map
+# esbuild bundles src/extension.ts and its dependencies (including
+# minimatch/yaml) into dist/extension.js -- the raw tsc output and
+# node_modules are only needed for compiling/running tests, never for
+# shipping.
+out/**
+node_modules/**
 
 **/*.map
