@@ -8,6 +8,12 @@ tsconfig.json
 # stale by the time you'd package.
 .vscode/**
 
+# Local dev-tooling scratch state (codebase-memory-mcp indexing cache, the
+# subagent-driven-development plan workspace) — not sourced from .gitignore
+# because vsce does not reliably honor it; list explicitly instead.
+.codebase-memory/**
+.superpowers/**
+
 docs/**
 src/**
 test/**

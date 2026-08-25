@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+- Fix: the packaged extension included local dev-tooling scratch state
+  (`.codebase-memory/`, `.superpowers/`) that should never have shipped. No
+  secrets or credentials were included — just non-sensitive local paths and
+  tool config — but the `.vscodeignore` didn't explicitly exclude them and
+  they leaked in via the 0.1.0 package. Excluded explicitly now.
+
 ## 0.1.0
 
 Initial release.

@@ -1,4 +1,5 @@
 .superpowers/
+.codebase-memory/
 out/
 node_modules/
 *.vsix
