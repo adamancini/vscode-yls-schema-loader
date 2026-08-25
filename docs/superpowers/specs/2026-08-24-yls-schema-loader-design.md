@@ -48,10 +48,18 @@ entry — without silently rewriting files.
    1. **Bundled mapping**: a curated, versioned JSON file shipped in the
       extension (`kind`+`apiVersion` → schema URL), covering common cases
       (e.g. ArgoCD `ApplicationSet`, Kargo `Stage`/`Warehouse`/`Promotion`).
-   2. **Cross-file `yaml.schemas` reuse**: check whether another entry
-      already in the workspace's `yaml.schemas` happens to key off the same
-      `kind`/`apiVersion` group (e.g. discovered earlier in the session for
-      a sibling file).
+   2. **Session-scoped reuse**: an in-memory cache (keyed by
+      `apiVersion`+`kind`, cleared on window reload) of resolutions this
+      extension has already made this session — bundled hits, accepted
+      GitHub candidates, or manual entries — so a second document of the
+      same kind/apiVersion doesn't re-query GitHub or re-prompt for
+      confirmation. (Decided during implementation: this is an in-memory
+      `Map`, not a scan of the workspace's `yaml.schemas` keys — there's no
+      reliable way to recover a `kind`/`apiVersion` from a `yaml.schemas`
+      entry, since that setting maps URL → file globs, not
+      kind/apiVersion → URL. This step is deliberately session-scoped only;
+      persistence to `yaml.schemas` happens separately, per component 5's
+      GitHub-heuristic-resolution bullet.)
    3. **GitHub heuristic discovery**: derive a candidate `org/repo` from the
       apiVersion group (e.g. `kargo.akuity.io` → `akuity/kargo`, overridable
       via `ylsSchemaLoader.githubRepoHints`), probe a fixed list of
