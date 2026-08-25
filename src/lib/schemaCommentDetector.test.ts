@@ -24,4 +24,35 @@ suite('hasSchemaComment', () => {
     ].join('\n');
     assert.strictEqual(hasSchemaComment(text, 2), true);
   });
+
+  test('a blank line before the modeline still counts as covered', () => {
+    const text = [
+      '',
+      '# yaml-language-server: $schema=https://example.com/schema.json',
+      'kind: Stage',
+    ].join('\n');
+    assert.strictEqual(hasSchemaComment(text, 0), true);
+  });
+
+  test('a non-schema comment before the modeline still counts as covered', () => {
+    const text = [
+      '# some other comment',
+      '# yaml-language-server: $schema=https://example.com/schema.json',
+      'kind: Stage',
+    ].join('\n');
+    assert.strictEqual(hasSchemaComment(text, 0), true);
+  });
+
+  test('a modeline with trailing content after the URL still matches', () => {
+    const text = '# yaml-language-server: $schema=https://example.com/schema.json extra stuff';
+    assert.strictEqual(hasSchemaComment(text, 0), true);
+  });
+
+  test('real content before any modeline returns false without scanning past it', () => {
+    const text = [
+      'kind: Stage',
+      '# yaml-language-server: $schema=https://example.com/schema.json',
+    ].join('\n');
+    assert.strictEqual(hasSchemaComment(text, 0), false);
+  });
 });

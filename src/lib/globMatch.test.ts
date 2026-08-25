@@ -13,4 +13,8 @@ suite('matchesAnyGlob', () => {
   test('normalizes backslash separators before matching', () => {
     assert.strictEqual(matchesAnyGlob('manifests\\stage.yaml', ['manifests/*.yaml']), true);
   });
+
+  test('matches a leading-slash, workspace-root-anchored pattern', () => {
+    assert.strictEqual(matchesAnyGlob('manifests/stage.yaml', ['/manifests/*.yaml']), true);
+  });
 });
