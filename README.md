@@ -32,7 +32,7 @@ extension automates the lookup.
 
 ## Bundled schemas
 
-45 kind/apiVersion pairs across the following ecosystems, grouped by
+52 kind/apiVersion pairs across the following ecosystems, grouped by
 project:
 
 - **Kargo** (`kargo.akuity.io/v1alpha1`) — all resource kinds: `Stage`,
@@ -61,6 +61,12 @@ project:
   `CiliumClusterwideNetworkPolicy`.
 - **cert-manager** (`cert-manager.io/v1`) — `Certificate`,
   `ClusterIssuer`, `Issuer`.
+- **Kustomize** (`kustomize.config.k8s.io/v1beta1`) — the native
+  `kubectl kustomize` / `kustomize` CLI's own `kustomization.yaml`
+  `Kustomization` kind, distinct from Flux's `kustomize.toolkit.fluxcd.io`
+  `Kustomization` CRD above. Kustomize doesn't publish its own JSON schema,
+  so this uses the community-maintained
+  [SchemaStore](https://www.schemastore.org/kustomization.json) entry.
 
 Anything else falls through to GitHub discovery, or you can extend the
 mapping yourself with `ylsSchemaLoader.additionalMappings`.

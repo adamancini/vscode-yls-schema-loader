@@ -123,4 +123,23 @@ suite('bundledMappingData seed content', () => {
       'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cert-manager.io/certificate_v1.json'
     );
   });
+
+  test('includes the native kustomize Kustomization schema, distinct from the Flux one', () => {
+    const url = resolveBundled(
+      bundledMappingData as MappingEntry[],
+      'Kustomization',
+      'kustomize.config.k8s.io/v1beta1'
+    );
+    assert.strictEqual(url, 'https://json.schemastore.org/kustomization.json');
+
+    const fluxUrl = resolveBundled(
+      bundledMappingData as MappingEntry[],
+      'Kustomization',
+      'kustomize.toolkit.fluxcd.io/v1'
+    );
+    assert.strictEqual(
+      fluxUrl,
+      'https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json'
+    );
+  });
 });

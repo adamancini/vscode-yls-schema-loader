@@ -253,5 +253,10 @@
     "kind": "Issuer",
     "apiVersion": "cert-manager.io/v1",
     "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cert-manager.io/issuer_v1.json"
+  },
+  {
+    "kind": "Kustomization",
+    "apiVersion": "kustomize.config.k8s.io/v1beta1",
+    "url": "https://json.schemastore.org/kustomization.json"
   }
 ]

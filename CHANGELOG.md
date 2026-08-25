@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.4
+
+- Added the native `kubectl kustomize` / `kustomize` CLI's `Kustomization`
+  kind (`kustomize.config.k8s.io/v1beta1`), sourced from
+  [SchemaStore](https://www.schemastore.org/kustomization.json) since
+  `kubernetes-sigs/kustomize` doesn't publish its own JSON schema. Distinct
+  from the existing Flux `kustomize.toolkit.fluxcd.io` `Kustomization` CRD
+  entry.
+
 ## 0.2.3
 
 - All Flux schemas now come from

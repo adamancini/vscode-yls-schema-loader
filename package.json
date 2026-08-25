@@ -2,7 +2,7 @@
   "name": "yls-schema-loader",
   "displayName": "YLS Schema Loader",
   "description": "Discovers yaml-language-server schemas for Kubernetes-style YAML documents and helps wire them up.",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "publisher": "adamancini",
   "license": "MIT",
   "repository": {
