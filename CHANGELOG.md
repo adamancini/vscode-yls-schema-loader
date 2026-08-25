@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2
+
+- Fix: `ImageRepository`, `ImagePolicy`, and `ImageUpdateAutomation`
+  (Flux's `image.toolkit.fluxcd.io` group) were missing from the bundled
+  mapping — an omission in the original Flux coverage, not an intentional
+  exclusion.
+
 ## 0.2.1
 
 - The shipped extension is now a single esbuild bundle instead of the raw
