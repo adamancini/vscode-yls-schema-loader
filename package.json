@@ -60,8 +60,9 @@
         },
         "yaml.schemas": {
           "type": "object",
+          "scope": "resource",
           "default": {},
-          "description": "Maps schema URLs/paths to glob patterns of files they apply to. Owned by the yaml-language-server extension (redhat.vscode-yaml); declared here too so ylsSchemaLoader can read and append entries to it even when that extension isn't installed."
+          "description": "Maps schema URLs or file paths to glob patterns of the files they validate. This is the same setting used by the YAML extension (redhat.vscode-yaml)."
         }
       }
     }
