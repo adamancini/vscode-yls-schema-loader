@@ -7,6 +7,7 @@ import bundledMappingData from './lib/bundledMappingData.json';
 import { applyResolution } from './applySchema';
 import { confirmGithubCandidate } from './confirmCandidate';
 import { getGithubAuthToken } from './githubAuth';
+import { SchemaCodeActionProvider } from './codeActionsProvider';
 import { INSERT_SCHEMA_COMMAND, INSERT_SCHEMA_FOR_CURRENT_DOCUMENT_COMMAND } from './commandIds';
 import { getInsertionMode, getEnableWebDiscovery, getAdditionalMappings, getGithubRepoHints } from './settings';
 
@@ -18,6 +19,12 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(vscode.workspace.onDidOpenTextDocument((doc) => diagnostics.refresh(doc)));
   context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => diagnostics.refresh(e.document)));
   vscode.workspace.textDocuments.forEach((doc) => diagnostics.refresh(doc));
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider('yaml', new SchemaCodeActionProvider(), {
+      providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
+    })
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(INSERT_SCHEMA_COMMAND, async (uri: vscode.Uri, startLine: number) => {
@@ -61,8 +68,20 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(INSERT_SCHEMA_FOR_CURRENT_DOCUMENT_COMMAND, () => {
-      vscode.window.showInformationMessage('YLS Schema Loader activated.');
+    vscode.commands.registerCommand(INSERT_SCHEMA_FOR_CURRENT_DOCUMENT_COMMAND, async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showWarningMessage('Open a YAML document to insert a schema.');
+        return;
+      }
+      const docs = parseKindApiVersions(editor.document.getText());
+      const cursorLine = editor.selection.active.line;
+      const target = [...docs].reverse().find((d) => d.startLine <= cursorLine) ?? docs[0];
+      if (!target) {
+        vscode.window.showWarningMessage('No recognizable kind/apiVersion found in this document.');
+        return;
+      }
+      await vscode.commands.executeCommand(INSERT_SCHEMA_COMMAND, editor.document.uri, target.startLine);
     })
   );
 }

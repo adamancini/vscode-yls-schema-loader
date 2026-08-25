@@ -1,0 +1,69 @@
+import * as assert from 'assert';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import { SchemaCodeActionProvider } from '../../src/codeActionsProvider';
+import { DIAGNOSTIC_SOURCE } from '../../src/diagnosticsProvider';
+import { INSERT_SCHEMA_COMMAND } from '../../src/commandIds';
+
+const KARGO_STAGE_SCHEMA_URL =
+  'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/stages.kargo.akuity.io_v1alpha1.json';
+
+suite('SchemaCodeActionProvider', () => {
+  test('offers a quick-fix that invokes the insertSchema command for a matching diagnostic', async () => {
+    const uri = vscode.Uri.parse('untitled:code-action-test.yaml');
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const diagnostic = new vscode.Diagnostic(
+      new vscode.Range(0, 0, 0, 1),
+      'No yaml-language-server schema associated with this Stage.',
+      vscode.DiagnosticSeverity.Information
+    );
+    diagnostic.source = DIAGNOSTIC_SOURCE;
+    const provider = new SchemaCodeActionProvider();
+    const actions = provider.provideCodeActions(doc, diagnostic.range, {
+      diagnostics: [diagnostic],
+      only: undefined,
+      triggerKind: vscode.CodeActionTriggerKind.Invoke,
+    });
+    assert.strictEqual(actions.length, 1);
+    assert.strictEqual(actions[0].command?.command, INSERT_SCHEMA_COMMAND);
+    // Compare the URI by its string form (not deepStrictEqual on the vscode.Uri object):
+    // vscode.workspace.openTextDocument returns a document whose .uri is a distinct Uri
+    // instance from the one used to open it, and VS Code's core eagerly computes/caches
+    // that instance's private _fsPath field as a side effect of opening the document. A
+    // deepStrictEqual against the freshly-parsed local `uri` (whose _fsPath cache is still
+    // unset) would fail on that private implementation detail even though both Uris are
+    // semantically identical.
+    assert.strictEqual(actions[0].command?.arguments?.[0]?.toString(), uri.toString());
+    assert.strictEqual(actions[0].command?.arguments?.[1], 0);
+  });
+
+  test('ignores diagnostics from other sources', () => {
+    const provider = new SchemaCodeActionProvider();
+    const otherDiagnostic = new vscode.Diagnostic(
+      new vscode.Range(0, 0, 0, 1),
+      'unrelated',
+      vscode.DiagnosticSeverity.Warning
+    );
+    otherDiagnostic.source = 'some-other-extension';
+    const actions = provider.provideCodeActions({} as vscode.TextDocument, otherDiagnostic.range, {
+      diagnostics: [otherDiagnostic],
+      only: undefined,
+      triggerKind: vscode.CodeActionTriggerKind.Invoke,
+    });
+    assert.strictEqual(actions.length, 0);
+  });
+});
+
+suite('insertSchemaForCurrentDocument command', () => {
+  test('resolves the document under the cursor', async () => {
+    const uri = vscode.Uri.file(
+      path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'current-document-command.yaml')
+    );
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const editor = await vscode.window.showTextDocument(doc);
+    editor.selection = new vscode.Selection(1, 0, 1, 0);
+    await vscode.commands.executeCommand('ylsSchemaLoader.insertSchemaForCurrentDocument');
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    assert.strictEqual(doc.lineAt(0).text, `# yaml-language-server: $schema=${KARGO_STAGE_SCHEMA_URL}`);
+  });
+});
