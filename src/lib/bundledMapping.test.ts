@@ -142,4 +142,12 @@ suite('bundledMappingData seed content', () => {
       'https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json'
     );
   });
+
+  test('includes the External Secrets Operator ExternalSecret schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'ExternalSecret', 'external-secrets.io/v1');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/external-secrets.io/externalsecret_v1.json'
+    );
+  });
 });

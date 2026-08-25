@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.5
+
+- Added the External Secrets Operator `ExternalSecret` kind
+  (`external-secrets.io/v1`).
+
 ## 0.2.4
 
 - Added the native `kubectl kustomize` / `kustomize` CLI's `Kustomization`

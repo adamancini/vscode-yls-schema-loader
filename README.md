@@ -32,7 +32,7 @@ extension automates the lookup.
 
 ## Bundled schemas
 
-52 kind/apiVersion pairs across the following ecosystems, grouped by
+53 kind/apiVersion pairs across the following ecosystems, grouped by
 project:
 
 - **Kargo** (`kargo.akuity.io/v1alpha1`) — all resource kinds: `Stage`,
@@ -67,6 +67,7 @@ project:
   `Kustomization` CRD above. Kustomize doesn't publish its own JSON schema,
   so this uses the community-maintained
   [SchemaStore](https://www.schemastore.org/kustomization.json) entry.
+- **External Secrets Operator** (`external-secrets.io/v1`) — `ExternalSecret`.
 
 Anything else falls through to GitHub discovery, or you can extend the
 mapping yourself with `ylsSchemaLoader.additionalMappings`.
