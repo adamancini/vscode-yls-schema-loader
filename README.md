@@ -49,7 +49,10 @@ project:
   (`source.toolkit.fluxcd.io/v1`), `Kustomization`
   (`kustomize.toolkit.fluxcd.io/v1`), `HelmRelease`
   (`helm.toolkit.fluxcd.io/v2`), `ImageRepository`, `ImagePolicy`,
-  `ImageUpdateAutomation` (`image.toolkit.fluxcd.io/v1`).
+  `ImageUpdateAutomation` (`image.toolkit.fluxcd.io/v1`), `Alert`, `Provider`
+  (`notification.toolkit.fluxcd.io/v1beta3`), `Receiver`
+  (`notification.toolkit.fluxcd.io/v1`) — schemas sourced from the
+  Flux-community-maintained [flux2-schemas](https://github.com/fluxcd-community/flux2-schemas).
 - **Istio** — `VirtualService`, `Gateway`, `DestinationRule`,
   `ServiceEntry`, `Sidecar` (`networking.istio.io/v1`), plus
   `PeerAuthentication`, `AuthorizationPolicy`, `RequestAuthentication`

@@ -68,7 +68,7 @@ suite('bundledMappingData seed content', () => {
     const url = resolveBundled(bundledMappingData as MappingEntry[], 'HelmRelease', 'helm.toolkit.fluxcd.io/v2');
     assert.strictEqual(
       url,
-      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/helm.toolkit.fluxcd.io/helmrelease_v2.json'
+      'https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json'
     );
   });
 
@@ -76,7 +76,7 @@ suite('bundledMappingData seed content', () => {
     const url = resolveBundled(bundledMappingData as MappingEntry[], 'ImageRepository', 'image.toolkit.fluxcd.io/v1');
     assert.strictEqual(
       url,
-      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imagerepository_v1.json'
+      'https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/imagerepository-image-v1.json'
     );
   });
 
@@ -84,7 +84,7 @@ suite('bundledMappingData seed content', () => {
     const url = resolveBundled(bundledMappingData as MappingEntry[], 'ImagePolicy', 'image.toolkit.fluxcd.io/v1');
     assert.strictEqual(
       url,
-      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imagepolicy_v1.json'
+      'https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/imagepolicy-image-v1.json'
     );
   });
 
@@ -96,7 +96,23 @@ suite('bundledMappingData seed content', () => {
     );
     assert.strictEqual(
       url,
-      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imageupdateautomation_v1.json'
+      'https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/imageupdateautomation-image-v1.json'
+    );
+  });
+
+  test('includes the Flux Alert schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'Alert', 'notification.toolkit.fluxcd.io/v1beta3');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/alert-notification-v1beta3.json'
+    );
+  });
+
+  test('includes the Flux Receiver schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'Receiver', 'notification.toolkit.fluxcd.io/v1');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/receiver-notification-v1.json'
     );
   });
 

@@ -132,47 +132,62 @@
   {
     "kind": "GitRepository",
     "apiVersion": "source.toolkit.fluxcd.io/v1",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/source.toolkit.fluxcd.io/gitrepository_v1.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/gitrepository-source-v1.json"
   },
   {
     "kind": "HelmRepository",
     "apiVersion": "source.toolkit.fluxcd.io/v1",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/source.toolkit.fluxcd.io/helmrepository_v1.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrepository-source-v1.json"
   },
   {
     "kind": "OCIRepository",
     "apiVersion": "source.toolkit.fluxcd.io/v1",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/source.toolkit.fluxcd.io/ocirepository_v1.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/ocirepository-source-v1.json"
   },
   {
     "kind": "Bucket",
     "apiVersion": "source.toolkit.fluxcd.io/v1",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/source.toolkit.fluxcd.io/bucket_v1.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/bucket-source-v1.json"
   },
   {
     "kind": "Kustomization",
     "apiVersion": "kustomize.toolkit.fluxcd.io/v1",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/kustomize.toolkit.fluxcd.io/kustomization_v1.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json"
   },
   {
     "kind": "HelmRelease",
     "apiVersion": "helm.toolkit.fluxcd.io/v2",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/helm.toolkit.fluxcd.io/helmrelease_v2.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json"
   },
   {
     "kind": "ImageRepository",
     "apiVersion": "image.toolkit.fluxcd.io/v1",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imagerepository_v1.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/imagerepository-image-v1.json"
   },
   {
     "kind": "ImagePolicy",
     "apiVersion": "image.toolkit.fluxcd.io/v1",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imagepolicy_v1.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/imagepolicy-image-v1.json"
   },
   {
     "kind": "ImageUpdateAutomation",
     "apiVersion": "image.toolkit.fluxcd.io/v1",
-    "url": "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imageupdateautomation_v1.json"
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/imageupdateautomation-image-v1.json"
+  },
+  {
+    "kind": "Alert",
+    "apiVersion": "notification.toolkit.fluxcd.io/v1beta3",
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/alert-notification-v1beta3.json"
+  },
+  {
+    "kind": "Provider",
+    "apiVersion": "notification.toolkit.fluxcd.io/v1beta3",
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/provider-notification-v1beta3.json"
+  },
+  {
+    "kind": "Receiver",
+    "apiVersion": "notification.toolkit.fluxcd.io/v1",
+    "url": "https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/receiver-notification-v1.json"
   },
   {
     "kind": "VirtualService",
