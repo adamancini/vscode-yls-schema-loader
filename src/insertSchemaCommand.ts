@@ -68,7 +68,11 @@ export function createInsertSchemaCommandHandler(
       sessionCache.set(sessionCacheKey(kind, apiVersion), url);
     }
 
-    if (resolution.source === 'bundled' || resolution.source === 'sessionCache') {
+    if (
+      resolution.source === 'bundled' ||
+      resolution.source === 'sessionCache' ||
+      resolution.source === 'crdsCatalog'
+    ) {
       await applyAndTrack(resolution.url);
     } else if (resolution.source === 'github') {
       const picked = await confirmCandidate(resolution.candidates);

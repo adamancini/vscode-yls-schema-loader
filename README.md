@@ -15,17 +15,21 @@ extension automates the lookup.
 
 - **Detects** `kind`/`apiVersion` in open YAML documents (including
   multi-document files) and checks whether a schema is already associated.
-- **Resolves** a schema through three stages, first match wins:
+- **Resolves** a schema through four stages, first match wins:
   1. A bundled, curated mapping of common kinds (see below).
   2. An in-session cache of resolutions already made this window.
   3. A GitHub heuristic: guesses the source repo from the `apiVersion` group,
      probes common schema file paths, and falls back to a GitHub code search.
+  4. A [datreeio/CRDs-catalog](https://github.com/datreeio/CRDs-catalog) lookup,
+     tried only when step 3 finds no source-code repo (or none with a schema)
+     and wasn't rate-limited — a single conventional URL, verified to exist
+     before it's used.
 - **Never edits silently.** An uncovered document gets an info diagnostic and
   a quick-fix — nothing is written until you act on it. A schema found via
   GitHub always shows you the candidate (or a picker, if there's more than
   one) and requires explicit confirmation before anything is inserted.
-  Bundled-mapping matches apply directly, since they're a curated, trusted
-  source.
+  Bundled-mapping and CRDs-catalog matches apply directly — both are already
+  verified before being offered, so there's nothing ambiguous to confirm.
 - **Two ways to apply a fix:** the quick-fix on the diagnostic, or the
   command palette — _YLS Schema Loader: Insert Schema for Current Document_
   — which resolves whichever document your cursor is in.

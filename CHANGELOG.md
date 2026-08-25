@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.6
+
+- Added a fourth resolution stage: when GitHub discovery finds no source-code
+  repo (or none with a schema) and wasn't rate-limited, automatically check
+  [datreeio/CRDs-catalog](https://github.com/datreeio/CRDs-catalog) for a
+  conventionally-named match. It's a single deterministic URL that's verified
+  to exist before use, so — like a bundled-mapping hit — it applies directly
+  without a confirmation prompt.
+
 ## 0.2.5
 
 - Added the External Secrets Operator `ExternalSecret` kind

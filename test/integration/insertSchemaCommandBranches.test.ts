@@ -27,6 +27,15 @@ const githubHitFetchFn: ResolverDeps['fetchFn'] = async (url: string) => {
 // Every probe 404s, so resolveSchema resolves to `{ source: 'unresolved' }`.
 const nothingFoundFetchFn: ResolverDeps['fetchFn'] = async () => ({ ok: false, status: 404, json: async () => ({}) });
 
+// GitHub discovery 404s everywhere, but the CRDs-catalog URL hits -- so resolveSchema
+// resolves to `{ source: 'crdsCatalog', url }` without any real network call.
+const crdsCatalogHitFetchFn: ResolverDeps['fetchFn'] = async (url: string) => {
+  if (url === 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/widgets.example.com/widget_v1.json') {
+    return { ok: true, status: 200, json: async () => ({}) };
+  }
+  return { ok: false, status: 404, json: async () => ({}) };
+};
+
 suite('insertSchema command: github branch', () => {
   test('applies the schema when the user accepts the offered candidate', async () => {
     const uri = fixtureUri('github-branch-accept.yaml');
@@ -78,6 +87,48 @@ suite('insertSchema command: github branch', () => {
       assert.strictEqual(
         sessionCache.get('widgets.example.com/v1::Widget'),
         'https://raw.githubusercontent.com/example/widgets/HEAD/schemas.json'
+      );
+    } finally {
+      diagnostics.dispose();
+    }
+  });
+});
+
+suite('insertSchema command: crdsCatalog branch', () => {
+  test('applies the CRDs-catalog match directly, without a confirmation prompt', async () => {
+    const uri = fixtureUri('crds-catalog-branch.yaml');
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const diagnostics = createDiagnosticsProvider();
+    try {
+      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, {
+        fetchFn: crdsCatalogHitFetchFn,
+        confirmCandidate: async () => {
+          throw new Error('confirmCandidate should not be called for a crdsCatalog resolution');
+        },
+      });
+      await handler(uri, 0);
+      assert.strictEqual(
+        doc.lineAt(0).text,
+        '# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/widgets.example.com/widget_v1.json'
+      );
+    } finally {
+      diagnostics.dispose();
+    }
+  });
+
+  test('populates the session cache', async () => {
+    const uri = fixtureUri('crds-catalog-branch.yaml');
+    await vscode.workspace.openTextDocument(uri);
+    const sessionCache = new Map<string, string>();
+    const diagnostics = createDiagnosticsProvider();
+    try {
+      const handler = createInsertSchemaCommandHandler(sessionCache, diagnostics, {
+        fetchFn: crdsCatalogHitFetchFn,
+      });
+      await handler(uri, 0);
+      assert.strictEqual(
+        sessionCache.get('widgets.example.com/v1::Widget'),
+        'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/widgets.example.com/widget_v1.json'
       );
     } finally {
       diagnostics.dispose();

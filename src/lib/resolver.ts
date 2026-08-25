@@ -1,11 +1,13 @@
 import { MappingEntry, resolveBundled } from './bundledMapping';
 import { discoverGithubSchema, FetchFn, GithubCandidate } from './githubDiscovery';
+import { discoverCrdsCatalogSchema } from './crdsCatalogDiscovery';
 import { RepoHint } from './repoHeuristic';
 
 export type Resolution =
   | { source: 'bundled'; url: string }
   | { source: 'sessionCache'; url: string }
   | { source: 'github'; candidates: GithubCandidate[] }
+  | { source: 'crdsCatalog'; url: string }
   | { source: 'unresolved' }
   | { source: 'error'; message: string };
 
@@ -62,12 +64,23 @@ export async function resolveSchema(kind: string, apiVersion: string, deps: Reso
           'GitHub API rate limit reached while searching for a schema. Sign in to GitHub for a higher limit, or try again later.',
       };
     }
+
+    // Last resort: no source-code repo could be found (or it had no schema at the
+    // conventional paths). Check the community-maintained CRDs-catalog directly --
+    // a single deterministic URL, verified to exist before being returned, so it applies
+    // the same way a bundled/session-cache hit does rather than prompting for confirmation.
+    const crdsCatalogCandidate = await discoverCrdsCatalogSchema(kind, apiVersion, deps.fetchFn);
+    if (crdsCatalogCandidate) {
+      return { source: 'crdsCatalog', url: crdsCatalogCandidate.url };
+    }
   } catch (err) {
     // A rejected fetchFn call (network down, DNS failure) -- not an HTTP error response,
-    // which resolves normally via response.ok/response.status and is handled above.
+    // which resolves normally via response.ok/response.status and is handled above. Could
+    // originate from either the GitHub discovery call or the CRDs-catalog lookup that
+    // follows it, so the message doesn't name a specific source.
     return {
       source: 'error',
-      message: `GitHub schema search failed: ${err instanceof Error ? err.message : String(err)}`,
+      message: `Schema discovery failed: ${err instanceof Error ? err.message : String(err)}`,
     };
   }
   return { source: 'unresolved' };

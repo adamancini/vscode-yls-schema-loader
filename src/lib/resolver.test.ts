@@ -56,9 +56,59 @@ suite('resolveSchema', () => {
     }
   });
 
-  test('returns unresolved when github discovery finds nothing', async () => {
+  test('returns unresolved when github discovery finds nothing and the CRDs-catalog has no match either', async () => {
     const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps());
     assert.deepStrictEqual(result, { source: 'unresolved' });
+  });
+
+  test('falls back to the CRDs-catalog when github discovery finds nothing', async () => {
+    const catalogUrl =
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cert-manager.io/certificate_v1.json';
+    const fetchFn: FetchFn = async (url: string) => {
+      if (url === catalogUrl) {
+        return { ok: true, status: 200, json: async () => ({}) };
+      }
+      return { ok: false, status: 404, json: async () => ({}) };
+    };
+    const result = await resolveSchema('Certificate', 'cert-manager.io/v1', baseDeps({ fetchFn }));
+    assert.deepStrictEqual(result, { source: 'crdsCatalog', url: catalogUrl });
+  });
+
+  test('does not fall back to the CRDs-catalog when github discovery already found candidates', async () => {
+    const githubHitUrl = 'https://api.github.com/repos/akuity/kargo/contents/schemas.json';
+    const catalogUrl =
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/kargo.akuity.io/stage_v1alpha1.json';
+    const fetchFn: FetchFn = async (url: string) => {
+      if (url === githubHitUrl) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ download_url: 'https://raw.githubusercontent.com/akuity/kargo/HEAD/schemas.json' }),
+        };
+      }
+      if (url === catalogUrl) {
+        return { ok: true, status: 200, json: async () => ({}) };
+      }
+      return { ok: false, status: 404, json: async () => ({}) };
+    };
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ fetchFn }));
+    assert.strictEqual(result.source, 'github');
+  });
+
+  test('does not fall back to the CRDs-catalog when github is rate-limited', async () => {
+    // kargo.akuity.io is a subdomain-style group, so deriveRepoFromApiVersion actually
+    // guesses a repo and probes it (unlike cert-manager.io, a two-label group that skips
+    // probing entirely) -- necessary for the 403s below to produce a real rate-limit signal.
+    const catalogUrl =
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/kargo.akuity.io/stage_v1alpha1.json';
+    const fetchFn: FetchFn = async (url: string) => {
+      if (url === catalogUrl) {
+        return { ok: true, status: 200, json: async () => ({}) };
+      }
+      return { ok: false, status: 403, json: async () => ({ message: 'rate limit exceeded' }) };
+    };
+    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ fetchFn }));
+    assert.strictEqual(result.source, 'error');
   });
 
   test('returns an error resolution when fetchFn throws (network failure)', async () => {
