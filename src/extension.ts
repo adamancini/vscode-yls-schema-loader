@@ -1,17 +1,27 @@
 import * as vscode from 'vscode';
 import { createDiagnosticsProvider } from './diagnosticsProvider';
 import { parseKindApiVersions } from './lib/yamlDocParser';
+import { debouncePerKey } from './lib/debounce';
 import { createInsertSchemaCommandHandler } from './insertSchemaCommand';
 import { SchemaCodeActionProvider } from './codeActionsProvider';
 import { INSERT_SCHEMA_COMMAND, INSERT_SCHEMA_FOR_CURRENT_DOCUMENT_COMMAND } from './commandIds';
 
+// Re-checking every open sub-document on every keystroke is wasted work on a large file.
+// Keyed per-document so editing one file doesn't reset the timer for another.
+const DIAGNOSTICS_DEBOUNCE_MS = 300;
+
 export function activate(context: vscode.ExtensionContext): void {
   const diagnostics = createDiagnosticsProvider();
   const sessionCache = new Map<string, string>();
+  const debouncedRefresh = debouncePerKey(
+    (doc: vscode.TextDocument) => diagnostics.refresh(doc),
+    DIAGNOSTICS_DEBOUNCE_MS,
+    (doc: vscode.TextDocument) => doc.uri.toString()
+  );
 
   context.subscriptions.push(diagnostics.collection);
   context.subscriptions.push(vscode.workspace.onDidOpenTextDocument((doc) => diagnostics.refresh(doc)));
-  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => diagnostics.refresh(e.document)));
+  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => debouncedRefresh(e.document)));
   vscode.workspace.textDocuments.forEach((doc) => diagnostics.refresh(doc));
 
   context.subscriptions.push(
