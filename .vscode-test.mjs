@@ -10,6 +10,10 @@ export default defineConfig({
   // default --user-data-dir past macOS's ~103-char unix socket path limit, crashing
   // VS Code with EINVAL on its IPC handle. Force a short, fixed user-data-dir instead.
   launchArgs: ['--user-data-dir=/tmp/yls-schema-loader-vscode-test-user-data'],
+  // yaml.schemas is owned by the YAML extension (redhat.vscode-yaml); install the real
+  // extension into the test host so its configuration schema registers that key, instead
+  // of declaring it ourselves in package.json (which would conflict with the real extension).
+  installExtensions: ['redhat.vscode-yaml'],
   mocha: {
     ui: 'tdd',
   },

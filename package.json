@@ -57,14 +57,6 @@
               "repo": { "type": "string", "description": "org/repo, e.g. akuity/kargo" }
             }
           }
-        },
-        "yaml.schemas": {
-          "type": "object",
-          "default": {},
-          "additionalProperties": {
-            "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
-          },
-          "description": "Maps schema URLs or file paths to glob patterns of the files they validate. This is the same setting used by the YAML extension (redhat.vscode-yaml)."
         }
       }
     }
