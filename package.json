@@ -106,17 +106,26 @@
     "pretest": "npm run compile && npm run bundle",
     "test:unit": "test -z \"$(find out/src/lib -name '*.test.js' 2>/dev/null)\" && echo 'no unit tests yet' || mocha \"out/src/lib/**/*.test.js\"",
     "test:integration": "vscode-test",
-    "test": "npm run test:unit && npm run test:integration"
+    "test": "npm run test:unit && npm run test:integration",
+    "lint": "eslint src test *.js",
+    "lint:fix": "eslint src test *.js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.90.0",
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^3.1.0",
     "esbuild": "^0.28.2",
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
     "mocha": "^10.3.0",
-    "typescript": "^5.4.0"
+    "prettier": "^3.9.6",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.68.0"
   },
   "dependencies": {
     "minimatch": "^9.0.4",

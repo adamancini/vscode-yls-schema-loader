@@ -3,10 +3,7 @@ import { hasSchemaComment } from './schemaCommentDetector';
 
 suite('hasSchemaComment', () => {
   test('detects a schema comment on the given line', () => {
-    const text = [
-      '# yaml-language-server: $schema=https://example.com/schema.json',
-      'kind: Stage',
-    ].join('\n');
+    const text = ['# yaml-language-server: $schema=https://example.com/schema.json', 'kind: Stage'].join('\n');
     assert.strictEqual(hasSchemaComment(text, 0), true);
   });
 
@@ -26,11 +23,7 @@ suite('hasSchemaComment', () => {
   });
 
   test('a blank line before the modeline still counts as covered', () => {
-    const text = [
-      '',
-      '# yaml-language-server: $schema=https://example.com/schema.json',
-      'kind: Stage',
-    ].join('\n');
+    const text = ['', '# yaml-language-server: $schema=https://example.com/schema.json', 'kind: Stage'].join('\n');
     assert.strictEqual(hasSchemaComment(text, 0), true);
   });
 
@@ -49,10 +42,7 @@ suite('hasSchemaComment', () => {
   });
 
   test('real content before any modeline returns false without scanning past it', () => {
-    const text = [
-      'kind: Stage',
-      '# yaml-language-server: $schema=https://example.com/schema.json',
-    ].join('\n');
+    const text = ['kind: Stage', '# yaml-language-server: $schema=https://example.com/schema.json'].join('\n');
     assert.strictEqual(hasSchemaComment(text, 0), false);
   });
 });

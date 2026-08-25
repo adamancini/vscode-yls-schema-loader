@@ -27,7 +27,7 @@ extension automates the lookup.
   Bundled-mapping matches apply directly, since they're a curated, trusted
   source.
 - **Two ways to apply a fix:** the quick-fix on the diagnostic, or the
-  command palette — *YLS Schema Loader: Insert Schema for Current Document*
+  command palette — _YLS Schema Loader: Insert Schema for Current Document_
   — which resolves whichever document your cursor is in.
 
 ## Bundled schemas
@@ -63,12 +63,12 @@ mapping yourself with `ylsSchemaLoader.additionalMappings`.
 
 ## Extension Settings
 
-| Setting | Type | Default | Description |
-|---|---|---|---|
-| `ylsSchemaLoader.insertionMode` | `"comment" \| "yamlSchemas" \| "both"` | `"comment"` | What a resolved schema writes: an inline comment, a `yaml.schemas` entry, or both. |
-| `ylsSchemaLoader.enableWebDiscovery` | `boolean` | `true` | Whether to search GitHub when no bundled mapping or cached resolution exists. |
-| `ylsSchemaLoader.additionalMappings` | `{ kind, apiVersion, url }[]` | `[]` | Your own overrides, merged on top of the bundled mapping. |
-| `ylsSchemaLoader.githubRepoHints` | `{ group, repo }[]` | `[]` | Explicit `apiVersion` group → `org/repo` overrides, for when the GitHub heuristic guesses wrong. |
+| Setting                              | Type                                   | Default     | Description                                                                                      |
+| ------------------------------------ | -------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| `ylsSchemaLoader.insertionMode`      | `"comment" \| "yamlSchemas" \| "both"` | `"comment"` | What a resolved schema writes: an inline comment, a `yaml.schemas` entry, or both.               |
+| `ylsSchemaLoader.enableWebDiscovery` | `boolean`                              | `true`      | Whether to search GitHub when no bundled mapping or cached resolution exists.                    |
+| `ylsSchemaLoader.additionalMappings` | `{ kind, apiVersion, url }[]`          | `[]`        | Your own overrides, merged on top of the bundled mapping.                                        |
+| `ylsSchemaLoader.githubRepoHints`    | `{ group, repo }[]`                    | `[]`        | Explicit `apiVersion` group → `org/repo` overrides, for when the GitHub heuristic guesses wrong. |
 
 ## Requirements
 
@@ -89,6 +89,21 @@ mapping yourself with `ylsSchemaLoader.additionalMappings`.
   paths, then a code search) — it won't find every schema in every repo
   layout. `ylsSchemaLoader.githubRepoHints` and `additionalMappings` are the
   escape hatches.
+
+## Development
+
+```bash
+npm install
+npm run compile # type-check + compile src/ and test/ to out/
+npm run bundle   # bundle src/extension.ts -> dist/extension.js (dev build)
+npm test         # unit tests, then integration tests in a real VS Code instance
+npm run lint     # eslint
+npm run format   # prettier --write
+```
+
+The shipped extension is a single esbuild bundle (`dist/extension.js`, built automatically
+by `vsce package`/`vsce publish` via the `vscode:prepublish` script) — `npm run compile`'s
+`out/` output is only used for running tests, never for packaging.
 
 ## Release Notes
 

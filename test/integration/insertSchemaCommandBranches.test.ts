@@ -75,7 +75,10 @@ suite('insertSchema command: github branch', () => {
         confirmCandidate: async (candidates: GithubCandidate[]) => candidates[0],
       });
       await handler(uri, 0);
-      assert.strictEqual(sessionCache.get('widgets.example.com/v1::Widget'), 'https://raw.githubusercontent.com/example/widgets/HEAD/schemas.json');
+      assert.strictEqual(
+        sessionCache.get('widgets.example.com/v1::Widget'),
+        'https://raw.githubusercontent.com/example/widgets/HEAD/schemas.json'
+      );
     } finally {
       diagnostics.dispose();
     }

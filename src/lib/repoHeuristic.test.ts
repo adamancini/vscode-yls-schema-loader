@@ -16,7 +16,10 @@ suite('deriveRepoFromApiVersion', () => {
 
   test('an explicit hint overrides the heuristic', () => {
     const hints = [{ group: 'argoproj.io', repo: 'argoproj/argo-cd' }];
-    assert.deepStrictEqual(deriveRepoFromApiVersion('argoproj.io/v1alpha1', hints), { org: 'argoproj', repo: 'argo-cd' });
+    assert.deepStrictEqual(deriveRepoFromApiVersion('argoproj.io/v1alpha1', hints), {
+      org: 'argoproj',
+      repo: 'argo-cd',
+    });
   });
 
   test('a hint for a different group does not apply', () => {

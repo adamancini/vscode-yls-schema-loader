@@ -25,7 +25,10 @@ suite('mergeMappings', () => {
       { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url: 'https://override.example.com/stage.json' },
     ];
     const merged = mergeMappings(bundled, additional);
-    assert.strictEqual(resolveBundled(merged, 'Stage', 'kargo.akuity.io/v1alpha1'), 'https://override.example.com/stage.json');
+    assert.strictEqual(
+      resolveBundled(merged, 'Stage', 'kargo.akuity.io/v1alpha1'),
+      'https://override.example.com/stage.json'
+    );
   });
 
   test('keeps bundled entries not present in additional', () => {

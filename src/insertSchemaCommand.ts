@@ -61,7 +61,9 @@ export function createInsertSchemaCommandHandler(
     async function applyAndTrack(url: string): Promise<void> {
       const result = await applyResolution(document, targetStartLine, url, insertionMode);
       if (result.yamlSchemasError) {
-        vscode.window.showWarningMessage(`Inserted schema, but couldn't update yaml.schemas: ${result.yamlSchemasError}`);
+        vscode.window.showWarningMessage(
+          `Inserted schema, but couldn't update yaml.schemas: ${result.yamlSchemasError}`
+        );
       }
       sessionCache.set(sessionCacheKey(kind, apiVersion), url);
     }

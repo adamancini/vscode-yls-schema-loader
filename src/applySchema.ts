@@ -39,7 +39,9 @@ export async function applyResolution(
         // `yaml.schemas` is owned/registered by the YAML extension (redhat.vscode-yaml), which
         // must be installed for `insertionMode: "yamlSchemas"` (or "both") to work -- VS Code
         // refuses .update() on a configuration key no installed extension has registered.
-        await vscode.workspace.getConfiguration('yaml').update('schemas', updated, vscode.ConfigurationTarget.Workspace);
+        await vscode.workspace
+          .getConfiguration('yaml')
+          .update('schemas', updated, vscode.ConfigurationTarget.Workspace);
         result.yamlSchemasUpdated = true;
       } catch (err) {
         result.yamlSchemasError = err instanceof Error ? err.message : String(err);

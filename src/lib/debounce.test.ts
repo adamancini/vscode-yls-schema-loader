@@ -21,7 +21,7 @@ suite('debouncePerKey', () => {
     assert.strictEqual(calls, 1);
   });
 
-  test('collapses multiple rapid calls with the same key into one, using the last call\'s arguments', async () => {
+  test("collapses multiple rapid calls with the same key into one, using the last call's arguments", async () => {
     let calls = 0;
     let lastArg = '';
     const debounced = debouncePerKey(

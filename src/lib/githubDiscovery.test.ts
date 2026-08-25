@@ -39,13 +39,18 @@ suite('discoverGithubSchema', () => {
       [searchUrl]: {
         status: 200,
         body: {
-          items: [{ path: 'schema/widget.json', html_url: 'https://github.com/acme/widgets/blob/main/schema/widget.json' }],
+          items: [
+            { path: 'schema/widget.json', html_url: 'https://github.com/acme/widgets/blob/main/schema/widget.json' },
+          ],
         },
       },
     });
     const result = await discoverGithubSchema('Widget', 'widgets.acme.com/v1', [], fetchFn, undefined);
     assert.strictEqual(result.candidates.length, 1);
-    assert.strictEqual(result.candidates[0].url, 'https://raw.githubusercontent.com/acme/widgets/HEAD/schema/widget.json');
+    assert.strictEqual(
+      result.candidates[0].url,
+      'https://raw.githubusercontent.com/acme/widgets/HEAD/schema/widget.json'
+    );
     assert.strictEqual(result.rateLimited, false);
   });
 
@@ -60,7 +65,11 @@ suite('discoverGithubSchema', () => {
   });
 
   test('flags rateLimited when the contents API returns 403 for every template and nothing is found', async () => {
-    const fetchFn: FetchFn = async () => ({ ok: false, status: 403, json: async () => ({ message: 'rate limit exceeded' }) });
+    const fetchFn: FetchFn = async () => ({
+      ok: false,
+      status: 403,
+      json: async () => ({ message: 'rate limit exceeded' }),
+    });
     const result = await discoverGithubSchema('Stage', 'kargo.akuity.io/v1alpha1', [], fetchFn, undefined);
     assert.deepStrictEqual(result.candidates, []);
     assert.strictEqual(result.rateLimited, true);

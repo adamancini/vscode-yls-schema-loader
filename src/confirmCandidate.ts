@@ -6,7 +6,11 @@ interface CandidateQuickPickItem extends vscode.QuickPickItem {
 }
 
 export interface ConfirmCandidateUi {
-  showInformationMessage: (message: string, options: vscode.MessageOptions, item: string) => Thenable<string | undefined>;
+  showInformationMessage: (
+    message: string,
+    options: vscode.MessageOptions,
+    item: string
+  ) => Thenable<string | undefined>;
   showQuickPick: (
     items: CandidateQuickPickItem[],
     options: vscode.QuickPickOptions

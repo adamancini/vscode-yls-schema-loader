@@ -58,13 +58,17 @@ export async function resolveSchema(kind: string, apiVersion: string, deps: Reso
     if (rateLimited) {
       return {
         source: 'error',
-        message: 'GitHub API rate limit reached while searching for a schema. Sign in to GitHub for a higher limit, or try again later.',
+        message:
+          'GitHub API rate limit reached while searching for a schema. Sign in to GitHub for a higher limit, or try again later.',
       };
     }
   } catch (err) {
     // A rejected fetchFn call (network down, DNS failure) -- not an HTTP error response,
     // which resolves normally via response.ok/response.status and is handled above.
-    return { source: 'error', message: `GitHub schema search failed: ${err instanceof Error ? err.message : String(err)}` };
+    return {
+      source: 'error',
+      message: `GitHub schema search failed: ${err instanceof Error ? err.message : String(err)}`,
+    };
   }
   return { source: 'unresolved' };
 }

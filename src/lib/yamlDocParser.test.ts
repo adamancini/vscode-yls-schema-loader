@@ -3,12 +3,7 @@ import { parseKindApiVersions } from './yamlDocParser';
 
 suite('parseKindApiVersions', () => {
   test('extracts kind and apiVersion from a single document', () => {
-    const text = [
-      'apiVersion: argoproj.io/v1alpha1',
-      'kind: ApplicationSet',
-      'metadata:',
-      '  name: demo',
-    ].join('\n');
+    const text = ['apiVersion: argoproj.io/v1alpha1', 'kind: ApplicationSet', 'metadata:', '  name: demo'].join('\n');
     assert.deepStrictEqual(parseKindApiVersions(text), [
       { docIndex: 0, kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', startLine: 0 },
     ]);

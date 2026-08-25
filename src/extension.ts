@@ -34,10 +34,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      INSERT_SCHEMA_COMMAND,
-      createInsertSchemaCommandHandler(sessionCache, diagnostics)
-    )
+    vscode.commands.registerCommand(INSERT_SCHEMA_COMMAND, createInsertSchemaCommandHandler(sessionCache, diagnostics))
   );
 
   context.subscriptions.push(

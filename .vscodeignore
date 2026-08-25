@@ -1,6 +1,9 @@
 esbuild.js
+eslint.config.js
 .vscode-test.mjs
 .mocharc.json
+.prettierrc.json
+.prettierignore
 tsconfig.json
 .gitignore
 

@@ -73,7 +73,11 @@ suite('resolveSchema', () => {
   });
 
   test('returns an error resolution when GitHub rate-limits every request', async () => {
-    const fetchFn: FetchFn = async () => ({ ok: false, status: 403, json: async () => ({ message: 'rate limit exceeded' }) });
+    const fetchFn: FetchFn = async () => ({
+      ok: false,
+      status: 403,
+      json: async () => ({ message: 'rate limit exceeded' }),
+    });
     const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ fetchFn }));
     assert.strictEqual(result.source, 'error');
     if (result.source === 'error') {
