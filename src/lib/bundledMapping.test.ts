@@ -72,6 +72,34 @@ suite('bundledMappingData seed content', () => {
     );
   });
 
+  test('includes the Flux ImageRepository schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'ImageRepository', 'image.toolkit.fluxcd.io/v1');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imagerepository_v1.json'
+    );
+  });
+
+  test('includes the Flux ImagePolicy schema', () => {
+    const url = resolveBundled(bundledMappingData as MappingEntry[], 'ImagePolicy', 'image.toolkit.fluxcd.io/v1');
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imagepolicy_v1.json'
+    );
+  });
+
+  test('includes the Flux ImageUpdateAutomation schema', () => {
+    const url = resolveBundled(
+      bundledMappingData as MappingEntry[],
+      'ImageUpdateAutomation',
+      'image.toolkit.fluxcd.io/v1'
+    );
+    assert.strictEqual(
+      url,
+      'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/image.toolkit.fluxcd.io/imageupdateautomation_v1.json'
+    );
+  });
+
   test('includes the cert-manager Certificate schema', () => {
     const url = resolveBundled(bundledMappingData as MappingEntry[], 'Certificate', 'cert-manager.io/v1');
     assert.strictEqual(

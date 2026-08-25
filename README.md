@@ -48,7 +48,8 @@ project:
 - **Flux** — `GitRepository`, `HelmRepository`, `OCIRepository`, `Bucket`
   (`source.toolkit.fluxcd.io/v1`), `Kustomization`
   (`kustomize.toolkit.fluxcd.io/v1`), `HelmRelease`
-  (`helm.toolkit.fluxcd.io/v2`).
+  (`helm.toolkit.fluxcd.io/v2`), `ImageRepository`, `ImagePolicy`,
+  `ImageUpdateAutomation` (`image.toolkit.fluxcd.io/v1`).
 - **Istio** — `VirtualService`, `Gateway`, `DestinationRule`,
   `ServiceEntry`, `Sidecar` (`networking.istio.io/v1`), plus
   `PeerAuthentication`, `AuthorizationPolicy`, `RequestAuthentication`
