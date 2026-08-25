@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.3
+
+- All Flux schemas now come from
+  [fluxcd-community/flux2-schemas](https://github.com/fluxcd-community/flux2-schemas),
+  a repo the Flux community maintains specifically for yaml-language-server use,
+  instead of a general-purpose CRD catalog.
+- Added the Flux notification-controller kinds: `Alert`, `Provider`, `Receiver`
+  (`notification.toolkit.fluxcd.io`).
+
 ## 0.2.2
 
 - Fix: `ImageRepository`, `ImagePolicy`, and `ImageUpdateAutomation`
