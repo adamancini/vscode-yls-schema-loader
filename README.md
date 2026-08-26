@@ -33,6 +33,13 @@ extension automates the lookup.
 - **Two ways to apply a fix:** the quick-fix on the diagnostic, or the
   command palette — _YLS Schema Loader: Insert Schema for Current Document_
   — which resolves whichever document your cursor is in.
+- **Opt-in auto-insert** (`ylsSchemaLoader.autoInsert`, off by default): when
+  a document is opened and resolves through one of the three direct-apply
+  sources above (bundled mapping, session cache, or CRDs-catalog), insert it
+  immediately — no diagnostic, no quick-fix, nothing to click. Runs on
+  document open only, not on every keystroke, so it can't turn typing into
+  a stream of network lookups. GitHub candidates still always require
+  manual confirmation, even with this on.
 
 ## Bundled schemas
 
@@ -82,6 +89,7 @@ mapping yourself with `ylsSchemaLoader.additionalMappings`.
 | ------------------------------------ | -------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
 | `ylsSchemaLoader.insertionMode`      | `"comment" \| "yamlSchemas" \| "both"` | `"comment"` | What a resolved schema writes: an inline comment, a `yaml.schemas` entry, or both.               |
 | `ylsSchemaLoader.enableWebDiscovery` | `boolean`                              | `true`      | Whether to search GitHub when no bundled mapping or cached resolution exists.                    |
+| `ylsSchemaLoader.autoInsert`         | `boolean`                              | `false`     | Auto-insert direct-apply resolutions (bundled/session-cache/CRDs-catalog) with no prompt.        |
 | `ylsSchemaLoader.additionalMappings` | `{ kind, apiVersion, url }[]`          | `[]`        | Your own overrides, merged on top of the bundled mapping.                                        |
 | `ylsSchemaLoader.githubRepoHints`    | `{ group, repo }[]`                    | `[]`        | Explicit `apiVersion` group → `org/repo` overrides, for when the GitHub heuristic guesses wrong. |
 

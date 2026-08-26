@@ -24,8 +24,7 @@ export async function applyResolution(
   if (insertionMode === 'comment' || insertionMode === 'both') {
     const edit = new vscode.WorkspaceEdit();
     edit.insert(document.uri, new vscode.Position(startLine, 0), `${schemaCommentLine(url)}\n`);
-    await vscode.workspace.applyEdit(edit);
-    result.commentInserted = true;
+    result.commentInserted = await vscode.workspace.applyEdit(edit);
   }
 
   if (insertionMode === 'yamlSchemas' || insertionMode === 'both') {

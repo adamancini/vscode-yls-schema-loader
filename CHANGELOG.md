@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.7
+
+- Added `ylsSchemaLoader.autoInsert` (off by default): when enabled, a
+  document resolving through a direct-apply source (bundled mapping,
+  session cache, or the CRDs-catalog fallback) gets its schema inserted
+  as soon as it's opened, with no diagnostic or quick-fix needed. Runs on
+  document open only, not on every edit, so it can't turn typing into a
+  stream of network lookups. GitHub-heuristic candidates are unaffected
+  and still always require manual confirmation.
+
 ## 0.2.6
 
 - Added a fourth resolution stage: when GitHub discovery finds no source-code

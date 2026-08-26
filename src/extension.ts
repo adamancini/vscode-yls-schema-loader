@@ -3,6 +3,7 @@ import { createDiagnosticsProvider } from './diagnosticsProvider';
 import { parseKindApiVersions } from './lib/yamlDocParser';
 import { debouncePerKey } from './lib/debounce';
 import { createInsertSchemaCommandHandler } from './insertSchemaCommand';
+import { autoInsertSchemas } from './autoInsert';
 import { SchemaCodeActionProvider } from './codeActionsProvider';
 import { INSERT_SCHEMA_COMMAND, INSERT_SCHEMA_FOR_CURRENT_DOCUMENT_COMMAND } from './commandIds';
 
@@ -13,16 +14,30 @@ const DIAGNOSTICS_DEBOUNCE_MS = 300;
 export function activate(context: vscode.ExtensionContext): void {
   const diagnostics = createDiagnosticsProvider();
   const sessionCache = new Map<string, string>();
-  const debouncedRefresh = debouncePerKey(
+
+  // Auto-insert (if enabled) runs first so any document it resolves never flashes a
+  // diagnostic that immediately disappears -- the refresh right after reflects the
+  // post-edit, already-covered state. Only wired to document *open* (and the initial
+  // activation scan), not to every edit: auto-insert's own applyEdit already re-triggers
+  // onDidChangeTextDocument, and its resolution can reach the network (GitHub discovery,
+  // CRDs-catalog), so running it on every debounced keystroke would re-issue that full
+  // lookup for as long as an unresolved document stays open. Diagnostics still refresh on
+  // every edit -- that path is local-only and doesn't touch the network.
+  async function handleDocumentOpen(doc: vscode.TextDocument): Promise<void> {
+    await autoInsertSchemas(doc, sessionCache);
+    diagnostics.refresh(doc);
+  }
+
+  const debouncedDiagnosticsRefresh = debouncePerKey(
     (doc: vscode.TextDocument) => diagnostics.refresh(doc),
     DIAGNOSTICS_DEBOUNCE_MS,
     (doc: vscode.TextDocument) => doc.uri.toString()
   );
 
   context.subscriptions.push(diagnostics.collection);
-  context.subscriptions.push(vscode.workspace.onDidOpenTextDocument((doc) => diagnostics.refresh(doc)));
-  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => debouncedRefresh(e.document)));
-  vscode.workspace.textDocuments.forEach((doc) => diagnostics.refresh(doc));
+  context.subscriptions.push(vscode.workspace.onDidOpenTextDocument((doc) => void handleDocumentOpen(doc)));
+  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => debouncedDiagnosticsRefresh(e.document)));
+  vscode.workspace.textDocuments.forEach((doc) => void handleDocumentOpen(doc));
 
   context.subscriptions.push(
     // No `scheme` restriction: Kubernetes manifests are commonly edited over

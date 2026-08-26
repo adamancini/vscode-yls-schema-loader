@@ -13,6 +13,10 @@ export function getEnableWebDiscovery(): boolean {
   return vscode.workspace.getConfiguration('ylsSchemaLoader').get<boolean>('enableWebDiscovery', true);
 }
 
+export function getAutoInsert(): boolean {
+  return vscode.workspace.getConfiguration('ylsSchemaLoader').get<boolean>('autoInsert', false);
+}
+
 export function getAdditionalMappings(): MappingEntry[] {
   return vscode.workspace.getConfiguration('ylsSchemaLoader').get<MappingEntry[]>('additionalMappings', []);
 }

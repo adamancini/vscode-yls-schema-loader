@@ -2,7 +2,7 @@
   "name": "yls-schema-loader",
   "displayName": "YLS Schema Loader",
   "description": "Discovers yaml-language-server schemas for Kubernetes-style YAML documents and helps wire them up.",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "publisher": "adamancini",
   "license": "MIT",
   "repository": {
@@ -47,6 +47,11 @@
           "type": "boolean",
           "default": true,
           "description": "Search GitHub for a matching schema when no bundled mapping or cached resolution exists."
+        },
+        "ylsSchemaLoader.autoInsert": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically insert a schema as soon as one is resolved, with no confirmation prompt -- for any source that would otherwise apply directly (bundled mapping, session cache, or the CRDs-catalog fallback). GitHub-heuristic candidates still require manual confirmation. Off by default."
         },
         "ylsSchemaLoader.additionalMappings": {
           "type": "array",

@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import {
   getInsertionMode,
   getEnableWebDiscovery,
+  getAutoInsert,
   getAdditionalMappings,
   getGithubRepoHints,
   getYamlSchemas,
@@ -19,12 +20,16 @@ suite('settings', () => {
     await vscode.workspace
       .getConfiguration('ylsSchemaLoader')
       .update('insertionMode', undefined, vscode.ConfigurationTarget.Workspace);
+    await vscode.workspace
+      .getConfiguration('ylsSchemaLoader')
+      .update('autoInsert', undefined, vscode.ConfigurationTarget.Workspace);
     await vscode.workspace.getConfiguration('yaml').update('schemas', undefined, vscode.ConfigurationTarget.Workspace);
   });
 
   test('returns documented defaults when nothing is configured', () => {
     assert.strictEqual(getInsertionMode(), 'comment');
     assert.strictEqual(getEnableWebDiscovery(), true);
+    assert.strictEqual(getAutoInsert(), false);
     assert.deepStrictEqual(getAdditionalMappings(), []);
     assert.deepStrictEqual(getGithubRepoHints(), []);
     assert.deepStrictEqual(getYamlSchemas(), {});
