@@ -9,10 +9,11 @@ parent: VYSL-0jlx
 created_at: 2026-11-24T19:13:54Z
 created_by: ada
 updated_at: 2026-11-24T19:25:08Z
-content_hash: "sha256:02ae85f5a72e796100f12d72f2d739e8240bff74973eb7569113e895ffdac58d"
+content_hash: "sha256:f00632cfb370149cc6a560b071299ad373a0f96f350b9adfbd0b4e28bd1d910a"
 assignee: dev-VYSL-sqhc
 closed_at: 2026-11-24T19:25:08Z
 close_reason: "Accepted via pvg story accept"
+led_to: [VYSL-uk3t]
 ---
 
 ## Description
@@ -185,6 +186,7 @@ status: delivered
 
 ## Links
 - Parent: [[VYSL-0jlx]]
+- Led to: [[VYSL-uk3t]]
 
 ## Comments
 

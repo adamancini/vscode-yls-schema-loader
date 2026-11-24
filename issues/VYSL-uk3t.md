@@ -1,16 +1,18 @@
 ---
 id: VYSL-uk3t
 title: "Auto-restore the missing schema directive on document open (v0.4.0)"
-status: open
+status: in_progress
 priority: 1
 type: task
 labels: [capstone]
 parent: VYSL-0jlx
 created_at: 2026-11-24T19:14:53Z
 created_by: ada
-updated_at: 2026-11-24T19:15:24Z
-content_hash: "sha256:8728267b5384dab7bda3af4f2e0ce108b6cadde27e423a35a136ba26e0e84e7a"
+updated_at: 2026-11-24T19:25:45Z
+content_hash: "sha256:4043a6c15d9cf073fbca7c1250ae16769524d00ca93a389ae71cc1fcab91015e"
 was_blocked_by: [VYSL-sqhc]
+assignee: dev-VYSL-uk3t
+follows: [VYSL-sqhc]
 ---
 
 ## Description
@@ -148,9 +150,13 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 ## History
 - 2026-11-24T19:14:53Z dep_added: blocked_by VYSL-sqhc
 - 2026-11-24T19:25:08Z dep_removed: was_blocked_by VYSL-sqhc
+- 2026-11-24T19:25:45Z status: open -> in_progress
+- 2026-11-24T19:25:45Z auto-follows: linked to predecessor VYSL-sqhc
+- 2026-11-24T19:25:45Z claimed by dev-VYSL-uk3t
 
 ## Links
 - Parent: [[VYSL-0jlx]]
 - Was blocked by: [[VYSL-sqhc]]
+- Follows: [[VYSL-sqhc]]
 
 ## Comments
