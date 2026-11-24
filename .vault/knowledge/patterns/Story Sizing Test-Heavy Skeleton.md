@@ -2,7 +2,7 @@
 type: pattern
 project: vscode-yls-schema-loader
 status: active
-actionable: pending
+actionable: applied
 source_epic: VYSL-gvc0
 created: 2026-11-24
 ---

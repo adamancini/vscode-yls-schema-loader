@@ -2,3 +2,4 @@
 # Managed by: pvg settings key=value
 
 lint.brownfield: true
+lint.quality_gates: rm -rf out dist|dedicated fixture|real network
