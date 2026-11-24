@@ -7,6 +7,7 @@ import {
   getAdditionalMappings,
   getGithubRepoHints,
   getYamlSchemas,
+  getEnableFluxCatalog,
 } from '../../src/settings';
 import { getGithubAuthToken } from '../../src/githubAuth';
 
@@ -24,6 +25,9 @@ suite('settings', () => {
       .getConfiguration('ylsSchemaLoader')
       .update('autoInsert', undefined, vscode.ConfigurationTarget.Workspace);
     await vscode.workspace.getConfiguration('yaml').update('schemas', undefined, vscode.ConfigurationTarget.Workspace);
+    await vscode.workspace
+      .getConfiguration('ylsSchemaLoader')
+      .update('enableFluxCatalog', undefined, vscode.ConfigurationTarget.Workspace);
   });
 
   test('returns documented defaults when nothing is configured', () => {
@@ -33,6 +37,23 @@ suite('settings', () => {
     assert.deepStrictEqual(getAdditionalMappings(), []);
     assert.deepStrictEqual(getGithubRepoHints(), []);
     assert.deepStrictEqual(getYamlSchemas(), {});
+  });
+
+  test('enableFluxCatalog defaults to true', () => {
+    assert.strictEqual(getEnableFluxCatalog(), true);
+  });
+
+  test('enableFluxCatalog reflects a workspace override', async () => {
+    await vscode.workspace
+      .getConfiguration('ylsSchemaLoader')
+      .update('enableFluxCatalog', false, vscode.ConfigurationTarget.Workspace);
+    try {
+      assert.strictEqual(getEnableFluxCatalog(), false);
+    } finally {
+      await vscode.workspace
+        .getConfiguration('ylsSchemaLoader')
+        .update('enableFluxCatalog', undefined, vscode.ConfigurationTarget.Workspace);
+    }
   });
 });
 

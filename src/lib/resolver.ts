@@ -4,6 +4,8 @@ import { discoverCrdsCatalogSchema } from './crdsCatalogDiscovery';
 import { RepoHint } from './repoHeuristic';
 
 export type Resolution =
+  | { source: 'override'; url: string }
+  | { source: 'fluxCatalog'; url: string }
   | { source: 'bundled'; url: string }
   | { source: 'sessionCache'; url: string }
   | { source: 'github'; candidates: GithubCandidate[] }
@@ -11,7 +13,23 @@ export type Resolution =
   | { source: 'unresolved' }
   | { source: 'error'; message: string };
 
+// Sources that apply without a confirmation prompt (quick-fix) and are eligible for
+// auto-insert. A `github` resolution (ambiguous, guessed candidates) is deliberately excluded.
+export const DIRECT_APPLY_SOURCES: ReadonlySet<Resolution['source']> = new Set<Resolution['source']>([
+  'override',
+  'fluxCatalog',
+  'bundled',
+  'sessionCache',
+  'crdsCatalog',
+]);
+
 export interface ResolverDeps {
+  // User ylsSchemaLoader.additionalMappings: always checked first.
+  overrideEntries: MappingEntry[];
+  // Resolves offline from a cached copy of the Flux schema catalog index (fetching the index
+  // at most once per TTL window). Never rejects; undefined means "not in the catalog".
+  lookupFluxCatalog: (kind: string, apiVersion: string) => Promise<string | undefined>;
+  // The bundled mapping data only (overrides are a separate, earlier stage).
   bundledEntries: MappingEntry[];
   // In-memory, session-scoped: caches resolutions this extension has already made
   // (bundled or accepted GitHub results) so a second file with the same kind/apiVersion
@@ -31,6 +49,16 @@ export function sessionCacheKey(kind: string, apiVersion: string): string {
 }
 
 export async function resolveSchema(kind: string, apiVersion: string, deps: ResolverDeps): Promise<Resolution> {
+  const overrideUrl = resolveBundled(deps.overrideEntries, kind, apiVersion);
+  if (overrideUrl) {
+    return { source: 'override', url: overrideUrl };
+  }
+
+  const catalogUrl = await deps.lookupFluxCatalog(kind, apiVersion);
+  if (catalogUrl) {
+    return { source: 'fluxCatalog', url: catalogUrl };
+  }
+
   const bundledUrl = resolveBundled(deps.bundledEntries, kind, apiVersion);
   if (bundledUrl) {
     return { source: 'bundled', url: bundledUrl };

@@ -5,6 +5,7 @@ import { createDiagnosticsProvider } from '../../src/diagnosticsProvider';
 import { createInsertSchemaCommandHandler } from '../../src/insertSchemaCommand';
 import { GithubCandidate } from '../../src/lib/githubDiscovery';
 import { ResolverDeps } from '../../src/lib/resolver';
+import { createFixtureFluxCatalog, disableActivatedFluxCatalog, restoreFluxCatalogSetting } from './testUtils';
 
 function fixtureUri(name: string): vscode.Uri {
   return vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', name));
@@ -37,12 +38,15 @@ const crdsCatalogHitFetchFn: ResolverDeps['fetchFn'] = async (url: string) => {
 };
 
 suite('insertSchema command: github branch', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('applies the schema when the user accepts the offered candidate', async () => {
     const uri = fixtureUri('github-branch-accept.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
     const diagnostics = createDiagnosticsProvider();
     try {
-      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, {
+      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, createFixtureFluxCatalog().catalog, {
         fetchFn: githubHitFetchFn,
         confirmCandidate: async (candidates: GithubCandidate[]) => candidates[0],
       });
@@ -62,7 +66,7 @@ suite('insertSchema command: github branch', () => {
     const originalFirstLine = doc.lineAt(0).text;
     const diagnostics = createDiagnosticsProvider();
     try {
-      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, {
+      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, createFixtureFluxCatalog().catalog, {
         fetchFn: githubHitFetchFn,
         confirmCandidate: async () => undefined,
       });
@@ -79,7 +83,7 @@ suite('insertSchema command: github branch', () => {
     const sessionCache = new Map<string, string>();
     const diagnostics = createDiagnosticsProvider();
     try {
-      const handler = createInsertSchemaCommandHandler(sessionCache, diagnostics, {
+      const handler = createInsertSchemaCommandHandler(sessionCache, diagnostics, createFixtureFluxCatalog().catalog, {
         fetchFn: githubHitFetchFn,
         confirmCandidate: async (candidates: GithubCandidate[]) => candidates[0],
       });
@@ -95,12 +99,15 @@ suite('insertSchema command: github branch', () => {
 });
 
 suite('insertSchema command: crdsCatalog branch', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('applies the CRDs-catalog match directly, without a confirmation prompt', async () => {
     const uri = fixtureUri('crds-catalog-branch.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
     const diagnostics = createDiagnosticsProvider();
     try {
-      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, {
+      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, createFixtureFluxCatalog().catalog, {
         fetchFn: crdsCatalogHitFetchFn,
         confirmCandidate: async () => {
           throw new Error('confirmCandidate should not be called for a crdsCatalog resolution');
@@ -122,7 +129,7 @@ suite('insertSchema command: crdsCatalog branch', () => {
     const sessionCache = new Map<string, string>();
     const diagnostics = createDiagnosticsProvider();
     try {
-      const handler = createInsertSchemaCommandHandler(sessionCache, diagnostics, {
+      const handler = createInsertSchemaCommandHandler(sessionCache, diagnostics, createFixtureFluxCatalog().catalog, {
         fetchFn: crdsCatalogHitFetchFn,
       });
       await handler(uri, 0);
@@ -137,12 +144,15 @@ suite('insertSchema command: crdsCatalog branch', () => {
 });
 
 suite('insertSchema command: unresolved branch', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('applies the manually-entered URL when the user provides one', async () => {
     const uri = fixtureUri('unresolved-branch-accept.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
     const diagnostics = createDiagnosticsProvider();
     try {
-      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, {
+      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, createFixtureFluxCatalog().catalog, {
         fetchFn: nothingFoundFetchFn,
         promptManualUrl: async () => 'https://manual.example.com/schema.json',
       });
@@ -159,12 +169,54 @@ suite('insertSchema command: unresolved branch', () => {
     const originalFirstLine = doc.lineAt(0).text;
     const diagnostics = createDiagnosticsProvider();
     try {
-      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, {
+      const handler = createInsertSchemaCommandHandler(new Map(), diagnostics, createFixtureFluxCatalog().catalog, {
         fetchFn: nothingFoundFetchFn,
         promptManualUrl: async () => undefined,
       });
       await handler(uri, 0);
       assert.strictEqual(doc.lineAt(0).text, originalFirstLine);
+    } finally {
+      diagnostics.dispose();
+    }
+  });
+});
+
+suite('insertSchema command: fluxCatalog branch', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
+  test('applies the catalog URL directly, without a confirmation prompt, and records it in the session cache', async () => {
+    const uri = fixtureUri('flux-catalog-branch.yaml');
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const sessionCache = new Map<string, string>();
+    const diagnostics = createDiagnosticsProvider();
+    const { catalog, requestedUrls } = createFixtureFluxCatalog();
+    let confirmCalled = false;
+    let manualPromptCalled = false;
+    try {
+      const handler = createInsertSchemaCommandHandler(sessionCache, diagnostics, catalog, {
+        fetchFn: nothingFoundFetchFn,
+        confirmCandidate: async () => {
+          confirmCalled = true;
+          return undefined;
+        },
+        promptManualUrl: async () => {
+          manualPromptCalled = true;
+          return undefined;
+        },
+      });
+      await handler(uri, 0);
+      assert.strictEqual(
+        doc.lineAt(0).text,
+        '# yaml-language-server: $schema=https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json'
+      );
+      assert.strictEqual(confirmCalled, false);
+      assert.strictEqual(manualPromptCalled, false);
+      assert.strictEqual(
+        sessionCache.get('kargo.akuity.io/v1alpha1::Stage'),
+        'https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json'
+      );
+      assert.deepStrictEqual(requestedUrls, ['https://schemas.fluxoperator.dev/index.json']);
     } finally {
       diagnostics.dispose();
     }

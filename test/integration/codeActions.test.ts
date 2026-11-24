@@ -4,12 +4,15 @@ import * as vscode from 'vscode';
 import { SchemaCodeActionProvider } from '../../src/codeActionsProvider';
 import { DIAGNOSTIC_SOURCE } from '../../src/diagnosticsProvider';
 import { INSERT_SCHEMA_COMMAND } from '../../src/commandIds';
-import { waitFor } from './testUtils';
+import { disableActivatedFluxCatalog, restoreFluxCatalogSetting, waitFor } from './testUtils';
 
 const KARGO_STAGE_SCHEMA_URL =
   'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/stages.kargo.akuity.io_v1alpha1.json';
 
 suite('SchemaCodeActionProvider', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('offers a quick-fix that invokes the insertSchema command for a matching diagnostic', async () => {
     const uri = vscode.Uri.parse('untitled:code-action-test.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
@@ -56,6 +59,9 @@ suite('SchemaCodeActionProvider', () => {
 });
 
 suite('SchemaCodeActionProvider (registered, headless)', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('vscode.executeCodeActionProvider returns the insert-schema quick-fix for the uncovered fixture', async () => {
     const uri = vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'uncovered.yaml'));
     const doc = await vscode.workspace.openTextDocument(uri);
@@ -75,6 +81,9 @@ suite('SchemaCodeActionProvider (registered, headless)', () => {
 });
 
 suite('insertSchemaForCurrentDocument command', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('resolves the document under the cursor', async () => {
     const uri = vscode.Uri.file(
       path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'current-document-command.yaml')

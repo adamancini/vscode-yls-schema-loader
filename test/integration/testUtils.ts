@@ -1,3 +1,9 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import { CachedCatalog, createFluxCatalog, FLUX_CATALOG_INDEX_URL, FluxCatalog } from '../../src/lib/fluxCatalog';
+import { FetchFn } from '../../src/lib/githubDiscovery';
+
 /**
  * Poll `predicate` until it returns true, or throw once `timeoutMs` elapses.
  * Use for eventual-consistency waits (e.g. diagnostics appearing after a
@@ -31,4 +37,54 @@ export async function staysFalseFor(predicate: () => boolean, durationMs = 500, 
     }
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
+}
+
+/**
+ * The activated extension in the test host owns a real FluxCatalog on the real global
+ * `fetch`, and it reacts to documents the tests open and to registered commands they run.
+ * Tests must never reach the network, so suites that open YAML documents or run registered
+ * commands switch it off for their duration (setup) and restore the default afterwards
+ * (teardown). Tests that exercise the catalog inject their own fixture-backed instance.
+ */
+export async function disableActivatedFluxCatalog(): Promise<void> {
+  await vscode.workspace
+    .getConfiguration('ylsSchemaLoader')
+    .update('enableFluxCatalog', false, vscode.ConfigurationTarget.Workspace);
+}
+
+export async function restoreFluxCatalogSetting(): Promise<void> {
+  await vscode.workspace
+    .getConfiguration('ylsSchemaLoader')
+    .update('enableFluxCatalog', undefined, vscode.ConfigurationTarget.Workspace);
+}
+
+const FLUX_CATALOG_FIXTURE = path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'flux-catalog-index.json');
+
+/**
+ * A FluxCatalog backed by the trimmed real-shape index fixture: the stub fetchFn serves the
+ * fixture for the index URL only (anything else 404s) and records every URL requested, and
+ * the store is in-memory. No real network access.
+ */
+export function createFixtureFluxCatalog(enabled = true): { catalog: FluxCatalog; requestedUrls: string[] } {
+  const requestedUrls: string[] = [];
+  const body: unknown = JSON.parse(fs.readFileSync(FLUX_CATALOG_FIXTURE, 'utf8'));
+  const fetchFn: FetchFn = async (url: string) => {
+    requestedUrls.push(url);
+    if (url === FLUX_CATALOG_INDEX_URL) {
+      return { ok: true, status: 200, json: async () => body };
+    }
+    return { ok: false, status: 404, json: async () => ({}) };
+  };
+  let stored: CachedCatalog | undefined;
+  const catalog = createFluxCatalog({
+    fetchFn,
+    isEnabled: () => enabled,
+    store: {
+      get: () => stored,
+      set: async (value: CachedCatalog) => {
+        stored = value;
+      },
+    },
+  });
+  return { catalog, requestedUrls };
 }

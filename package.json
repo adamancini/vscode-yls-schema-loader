@@ -43,6 +43,11 @@
           "default": "comment",
           "description": "What to write when a schema is resolved: an inline yaml-language-server comment, a yaml.schemas entry, or both."
         },
+        "ylsSchemaLoader.enableFluxCatalog": {
+          "type": "boolean",
+          "default": true,
+          "description": "Resolve schemas from the Flux schema catalog (https://schemas.fluxoperator.dev/catalog/). Its index is downloaded at most once a day and cached. Turn this off in air-gapped environments to prevent any request to schemas.fluxoperator.dev."
+        },
         "ylsSchemaLoader.enableWebDiscovery": {
           "type": "boolean",
           "default": true,

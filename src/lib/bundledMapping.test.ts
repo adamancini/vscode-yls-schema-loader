@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { resolveBundled, mergeMappings, MappingEntry } from './bundledMapping';
+import { resolveBundled, MappingEntry } from './bundledMapping';
 import bundledMappingData from './bundledMappingData.json';
 
 suite('resolveBundled', () => {
@@ -13,29 +13,6 @@ suite('resolveBundled', () => {
 
   test('returns undefined for an unknown pair', () => {
     assert.strictEqual(resolveBundled(entries, 'Warehouse', 'kargo.akuity.io/v1alpha1'), undefined);
-  });
-});
-
-suite('mergeMappings', () => {
-  test('additional entries override bundled entries for the same kind/apiVersion', () => {
-    const bundled: MappingEntry[] = [
-      { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url: 'https://bundled.example.com/stage.json' },
-    ];
-    const additional: MappingEntry[] = [
-      { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url: 'https://override.example.com/stage.json' },
-    ];
-    const merged = mergeMappings(bundled, additional);
-    assert.strictEqual(
-      resolveBundled(merged, 'Stage', 'kargo.akuity.io/v1alpha1'),
-      'https://override.example.com/stage.json'
-    );
-  });
-
-  test('keeps bundled entries not present in additional', () => {
-    const bundled: MappingEntry[] = [
-      { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url: 'https://bundled.example.com/stage.json' },
-    ];
-    assert.strictEqual(mergeMappings(bundled, []).length, 1);
   });
 });
 

@@ -13,6 +13,10 @@ export function getEnableWebDiscovery(): boolean {
   return vscode.workspace.getConfiguration('ylsSchemaLoader').get<boolean>('enableWebDiscovery', true);
 }
 
+export function getEnableFluxCatalog(): boolean {
+  return vscode.workspace.getConfiguration('ylsSchemaLoader').get<boolean>('enableFluxCatalog', true);
+}
+
 export function getAutoInsert(): boolean {
   return vscode.workspace.getConfiguration('ylsSchemaLoader').get<boolean>('autoInsert', false);
 }

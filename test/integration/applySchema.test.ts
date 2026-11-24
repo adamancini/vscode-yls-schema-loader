@@ -1,13 +1,15 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { waitFor } from './testUtils';
+import { disableActivatedFluxCatalog, restoreFluxCatalogSetting, waitFor } from './testUtils';
 
 const KARGO_STAGE_SCHEMA_URL =
   'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/stages.kargo.akuity.io_v1alpha1.json';
 
 suite('insertSchema command', () => {
+  setup(disableActivatedFluxCatalog);
   teardown(async () => {
+    await restoreFluxCatalogSetting();
     await vscode.workspace
       .getConfiguration('ylsSchemaLoader')
       .update('insertionMode', undefined, vscode.ConfigurationTarget.Workspace);
