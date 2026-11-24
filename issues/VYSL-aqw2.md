@@ -7,8 +7,8 @@ type: task
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
-updated_at: 2026-11-24T16:34:02Z
-content_hash: "sha256:a1b8e9cc0c7343b75e9448a8d9cf04aadfaeb4f5d9942164620002eb46bf2661"
+updated_at: 2026-11-24T17:03:16Z
+content_hash: "sha256:57cc5a1eef47a487f1b733dd32e34f0dc5558eef724bb99d2661eae108e80394"
 blocked_by: [VYSL-70kn]
 blocks: [VYSL-bhp3]
 ---
@@ -55,7 +55,7 @@ Modify: src/lib/fluxCatalog.ts, src/lib/resolver.ts, src/lib/resolver.test.ts, s
 OUT OF SCOPE:
 - Removing the bundled mapping (src/lib/bundledMapping.ts and src/lib/bundledMappingData.json, whose entries still point at raw.githubusercontent.com/datreeio/CRDs-catalog URLs; that is data, not the discovery stage): the final story deletes it entirely. Leave it working here.
 - README.md, CHANGELOG.md, version bump: final story.
-- Honoring a leftover enableWebDiscovery=false as a catalog opt-out: the user chose a dedicated enableFluxCatalog setting; the removal is called out in the changelog by the final story. Never.
+- Honoring a leftover enableWebDiscovery=false as a catalog opt-out, or any other compatibility shim or deprecation path: there are no other users of this extension and breaking changes are expected. The setting is removed outright. Never.
 - Historical documents under docs/superpowers/: they record past plans and are not user documentation. Never.
 - Any new behavior. This story only removes.
 
