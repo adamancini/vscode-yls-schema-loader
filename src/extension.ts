@@ -61,9 +61,13 @@ export function activate(context: vscode.ExtensionContext): void {
     // No `scheme` restriction: Kubernetes manifests are commonly edited over
     // vscode-remote (SSH/containers) or as unsaved (untitled) documents, and this
     // provider doesn't touch disk directly, so it should work in either case.
-    vscode.languages.registerCodeActionsProvider({ language: 'yaml' }, new SchemaCodeActionProvider(), {
-      providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
-    })
+    vscode.languages.registerCodeActionsProvider(
+      { language: 'yaml' },
+      new SchemaCodeActionProvider(sessionCache, fluxCatalog),
+      {
+        providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
+      }
+    )
   );
 
   context.subscriptions.push(

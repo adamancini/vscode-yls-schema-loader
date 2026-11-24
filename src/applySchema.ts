@@ -13,18 +13,36 @@ export interface ApplyResult {
   yamlSchemasError?: string;
 }
 
+// The edit that inserts the schema comment line above the document starting at
+// `startLine`. Shared by applyResolution and the quick-fix code action, which attaches it as
+// CodeAction.edit, so both paths insert byte-identical text.
+export function buildSchemaCommentEdit(uri: vscode.Uri, startLine: number, url: string): vscode.WorkspaceEdit {
+  const edit = new vscode.WorkspaceEdit();
+  edit.insert(uri, new vscode.Position(startLine, 0), `${schemaCommentLine(url)}\n`);
+  return edit;
+}
+
+export function insertionModeWritesComment(insertionMode: InsertionMode): boolean {
+  return insertionMode === 'comment' || insertionMode === 'both';
+}
+
+export interface ApplyOptions {
+  // The schema comment is already in the document (inserted by the quick-fix's
+  // CodeAction.edit), so only the yaml.schemas half of the insertion mode remains.
+  skipComment?: boolean;
+}
+
 export async function applyResolution(
   document: vscode.TextDocument,
   startLine: number,
   url: string,
-  insertionMode: InsertionMode
+  insertionMode: InsertionMode,
+  options: ApplyOptions = {}
 ): Promise<ApplyResult> {
   const result: ApplyResult = { commentInserted: false, yamlSchemasUpdated: false };
 
-  if (insertionMode === 'comment' || insertionMode === 'both') {
-    const edit = new vscode.WorkspaceEdit();
-    edit.insert(document.uri, new vscode.Position(startLine, 0), `${schemaCommentLine(url)}\n`);
-    result.commentInserted = await vscode.workspace.applyEdit(edit);
+  if (insertionModeWritesComment(insertionMode) && !options.skipComment) {
+    result.commentInserted = await vscode.workspace.applyEdit(buildSchemaCommentEdit(document.uri, startLine, url));
   }
 
   if (insertionMode === 'yamlSchemas' || insertionMode === 'both') {

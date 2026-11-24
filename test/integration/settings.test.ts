@@ -72,7 +72,7 @@ suite('contributed configuration', () => {
   test('the autoInsert description names the remaining sources and no removed one', () => {
     assert.strictEqual(
       properties['ylsSchemaLoader.autoInsert'].description,
-      'Automatically insert a schema as soon as one is resolved when a document is opened, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache). Off by default.'
+      'When a document opens and its schema resolves, insert the schema immediately, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache). Off by default.'
     );
   });
 });

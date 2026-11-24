@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { SchemaCodeActionProvider } from '../../src/codeActionsProvider';
 import { DIAGNOSTIC_SOURCE } from '../../src/diagnosticsProvider';
 import { INSERT_SCHEMA_COMMAND } from '../../src/commandIds';
+import { FluxCatalog } from '../../src/lib/fluxCatalog';
 import {
   clearAdditionalMappings,
   disableActivatedFluxCatalog,
@@ -11,6 +12,10 @@ import {
   setStageOverride,
   waitFor,
 } from './testUtils';
+
+// These tests exercise the provider's shape only; a catalog that never resolves keeps them
+// offline.
+const NO_CATALOG: FluxCatalog = { lookup: async () => undefined };
 
 const OVERRIDE_STAGE_SCHEMA_URL = 'https://override.example.com/stage.json';
 
@@ -27,8 +32,8 @@ suite('SchemaCodeActionProvider', () => {
       vscode.DiagnosticSeverity.Information
     );
     diagnostic.source = DIAGNOSTIC_SOURCE;
-    const provider = new SchemaCodeActionProvider();
-    const actions = provider.provideCodeActions(doc, diagnostic.range, {
+    const provider = new SchemaCodeActionProvider(new Map(), NO_CATALOG);
+    const actions = await provider.provideCodeActions(doc, diagnostic.range, {
       diagnostics: [diagnostic],
       only: undefined,
       triggerKind: vscode.CodeActionTriggerKind.Invoke,
@@ -46,15 +51,15 @@ suite('SchemaCodeActionProvider', () => {
     assert.strictEqual(actions[0].command?.arguments?.[1], 0);
   });
 
-  test('ignores diagnostics from other sources', () => {
-    const provider = new SchemaCodeActionProvider();
+  test('ignores diagnostics from other sources', async () => {
+    const provider = new SchemaCodeActionProvider(new Map(), NO_CATALOG);
     const otherDiagnostic = new vscode.Diagnostic(
       new vscode.Range(0, 0, 0, 1),
       'unrelated',
       vscode.DiagnosticSeverity.Warning
     );
     otherDiagnostic.source = 'some-other-extension';
-    const actions = provider.provideCodeActions({} as vscode.TextDocument, otherDiagnostic.range, {
+    const actions = await provider.provideCodeActions({} as vscode.TextDocument, otherDiagnostic.range, {
       diagnostics: [otherDiagnostic],
       only: undefined,
       triggerKind: vscode.CodeActionTriggerKind.Invoke,
