@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://schemas.example.invalid/first.json
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: first
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: second
