@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { parseKindApiVersions } from './lib/yamlDocParser';
 import { isCovered } from './lib/coverageCheck';
-import { resolveSchema, sessionCacheKey, Resolution, ResolverDeps } from './lib/resolver';
-import { mergeMappings } from './lib/bundledMapping';
+import { resolveSchema, sessionCacheKey, ResolverDeps, DIRECT_APPLY_SOURCES } from './lib/resolver';
+import { FluxCatalog } from './lib/fluxCatalog';
 import bundledMappingData from './lib/bundledMappingData.json';
 import { applyResolution } from './applySchema';
 import { getGithubAuthToken } from './githubAuth';
@@ -15,11 +15,6 @@ import {
   getYamlSchemas,
 } from './settings';
 
-// Sources that already apply without a confirmation prompt when triggered manually --
-// auto-insert extends that same trust boundary to run without the user even opening the
-// quick-fix. A `github` resolution (ambiguous candidates) is deliberately excluded.
-const DIRECT_APPLY_SOURCES: ReadonlySet<Resolution['source']> = new Set(['bundled', 'sessionCache', 'crdsCatalog']);
-
 export interface AutoInsertOverrides {
   fetchFn?: ResolverDeps['fetchFn'];
 }
@@ -27,6 +22,7 @@ export interface AutoInsertOverrides {
 export async function autoInsertSchemas(
   document: vscode.TextDocument,
   sessionCache: Map<string, string>,
+  fluxCatalog: FluxCatalog,
   overrides: AutoInsertOverrides = {}
 ): Promise<void> {
   if (document.languageId !== 'yaml' || !getAutoInsert()) {
@@ -38,7 +34,9 @@ export async function autoInsertSchemas(
   const yamlSchemas = getYamlSchemas();
   const insertionMode = getInsertionMode();
   const deps: ResolverDeps = {
-    bundledEntries: mergeMappings(bundledMappingData, getAdditionalMappings()),
+    overrideEntries: getAdditionalMappings(),
+    lookupFluxCatalog: (kind, apiVersion) => fluxCatalog.lookup(kind, apiVersion),
+    bundledEntries: bundledMappingData,
     sessionCache,
     enableWebDiscovery: getEnableWebDiscovery(),
     githubHints: getGithubRepoHints(),
@@ -53,6 +51,8 @@ export async function autoInsertSchemas(
     if (isCovered(text, doc.startLine, relativePath, yamlSchemas)) {
       continue;
     }
+    // Auto-insert extends the direct-apply trust boundary (resolver.ts) to run without the
+    // user even opening the quick-fix; a `github` resolution is never applied on its own.
     const resolution = await resolveSchema(doc.kind, doc.apiVersion, deps);
     if (!DIRECT_APPLY_SOURCES.has(resolution.source) || !('url' in resolution)) {
       continue;
