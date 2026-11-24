@@ -17,6 +17,9 @@ tsconfig.json
 # because vsce does not reliably honor it; list explicitly instead.
 .codebase-memory/**
 .superpowers/**
+.vault/**
+.claude/**
+.worktrees/**
 
 docs/**
 src/**
