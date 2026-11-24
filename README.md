@@ -1,8 +1,9 @@
 # YLS Schema Loader
 
 Finds the right [yaml-language-server](https://github.com/redhat-developer/yaml-language-server)
-schema for Kubernetes-style YAML documents and helps you wire it up — without
-guessing repo layouts or digging through source by hand.
+schema for Kubernetes-style YAML documents in the
+[Flux schema catalog](https://schemas.fluxoperator.dev/catalog/) and wires it
+up for you.
 
 `redhat.vscode-yaml` (which bundles yaml-language-server) only validates a
 document once it's associated with a schema, either via a `yaml.schemas`

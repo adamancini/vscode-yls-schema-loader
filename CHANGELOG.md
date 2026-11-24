@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+- Marketplace listing: updated the description, added keywords and the
+  Linters category, and refreshed the README intro for the Flux schema
+  catalog. No code changes.
+
 ## 0.3.0 (BREAKING)
 
 - The [Flux schema catalog](https://schemas.fluxoperator.dev/catalog/) is now

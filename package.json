@@ -1,8 +1,8 @@
 {
   "name": "yls-schema-loader",
   "displayName": "YLS Schema Loader",
-  "description": "Discovers yaml-language-server schemas for Kubernetes-style YAML documents and helps wire them up.",
-  "version": "0.3.0",
+  "description": "Finds the yaml-language-server schema for Kubernetes and CRD YAML in the Flux schema catalog and wires it up.",
+  "version": "0.3.1",
   "publisher": "adamancini",
   "license": "MIT",
   "repository": {
@@ -17,7 +17,23 @@
     "vscode": "^1.90.0"
   },
   "categories": [
+    "Linters",
     "Other"
+  ],
+  "keywords": [
+    "kubernetes",
+    "k8s",
+    "yaml",
+    "schema",
+    "json schema",
+    "crd",
+    "yaml-language-server",
+    "flux",
+    "gitops",
+    "kustomize",
+    "helm",
+    "argo cd",
+    "kargo"
   ],
   "activationEvents": [
     "onLanguage:yaml"
