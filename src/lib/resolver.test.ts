@@ -62,7 +62,7 @@ suite('resolveSchema', () => {
   });
 
   test('the native kustomize Kustomization resolves through a user override', async () => {
-    const url = 'https://json.schemastore.org/kustomization.json';
+    const url = 'https://override.example.com/kustomization.json';
     const result = await resolveSchema(
       'Kustomization',
       'kustomize.config.k8s.io/v1beta1',
