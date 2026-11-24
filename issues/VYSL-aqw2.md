@@ -1,19 +1,20 @@
 ---
 id: VYSL-aqw2
 title: "Remove GitHub heuristic discovery, CRDs-catalog fallback stages"
-status: in_progress
+status: closed
 priority: 1
 type: task
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
-updated_at: 2026-11-24T17:23:05Z
-content_hash: "sha256:9a9b9a5f5fade366e0c9d200ebbfe20cb63025a3a3fdca13788aac9252551b43"
-blocks: [VYSL-bhp3]
+updated_at: 2026-11-24T17:24:16Z
+content_hash: "sha256:6a3ba008447e0f37b467caad65c3ad03254125126055f235826280193d4e635d"
 was_blocked_by: [VYSL-70kn]
 assignee: dev-VYSL-aqw2
 follows: [VYSL-70kn]
 labels: [delivered]
+closed_at: 2026-11-24T17:24:15Z
+close_reason: "Accepted: GitHub heuristic and CRDs-catalog stages removed; chain is override, fluxCatalog, bundled, sessionCache, unresolved; proof SHA-matched, 82 unit + 25 integration pass"
 ---
 
 ## Description
@@ -142,10 +143,11 @@ status: delivered
 - 2026-11-24T17:16:41Z auto-follows: linked to predecessor VYSL-70kn
 - 2026-11-24T17:16:41Z claimed by dev-VYSL-aqw2
 - 2026-11-24T17:23:02Z status: in_progress -> in_progress
+- 2026-11-24T17:24:16Z status: in_progress -> closed
+- 2026-11-24T17:24:16Z dep_removed: no_longer_blocks VYSL-bhp3
 
 ## Links
 - Parent: [[VYSL-gvc0]]
-- Blocks: [[VYSL-bhp3]]
 - Was blocked by: [[VYSL-70kn]]
 - Follows: [[VYSL-70kn]]
 
