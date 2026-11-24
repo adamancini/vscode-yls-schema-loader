@@ -2,7 +2,7 @@
   "name": "yls-schema-loader",
   "displayName": "YLS Schema Loader",
   "description": "Finds the yaml-language-server schema for Kubernetes and CRD YAML in the Flux schema catalog and wires it up.",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "publisher": "adamancini",
   "license": "MIT",
   "repository": {
@@ -67,7 +67,7 @@
         "ylsSchemaLoader.autoInsert": {
           "type": "boolean",
           "default": false,
-          "description": "When a document opens and its schema resolves, insert the schema immediately, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache). Off by default."
+          "description": "When a document opens and its schema resolves, insert the schema immediately, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache) and to files already associated through yaml.schemas whose inline directive is missing. Off by default."
         },
         "ylsSchemaLoader.additionalMappings": {
           "type": "array",

@@ -69,10 +69,10 @@ suite('contributed configuration', () => {
     ]);
   });
 
-  test('the autoInsert description names the remaining sources and no removed one', () => {
+  test('the autoInsert description names every resolved source and the yaml.schemas restore', () => {
     assert.strictEqual(
       properties['ylsSchemaLoader.autoInsert'].description,
-      'When a document opens and its schema resolves, insert the schema immediately, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache). Off by default.'
+      'When a document opens and its schema resolves, insert the schema immediately, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache) and to files already associated through yaml.schemas whose inline directive is missing. Off by default.'
     );
   });
 });
