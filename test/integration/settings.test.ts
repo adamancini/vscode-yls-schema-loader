@@ -1,15 +1,14 @@
 import * as assert from 'assert';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import {
   getInsertionMode,
-  getEnableWebDiscovery,
   getAutoInsert,
   getAdditionalMappings,
-  getGithubRepoHints,
   getYamlSchemas,
   getEnableFluxCatalog,
 } from '../../src/settings';
-import { getGithubAuthToken } from '../../src/githubAuth';
 
 suite('settings', () => {
   // Other test files write to these same workspace-scoped settings (e.g.
@@ -32,10 +31,8 @@ suite('settings', () => {
 
   test('returns documented defaults when nothing is configured', () => {
     assert.strictEqual(getInsertionMode(), 'comment');
-    assert.strictEqual(getEnableWebDiscovery(), true);
     assert.strictEqual(getAutoInsert(), false);
     assert.deepStrictEqual(getAdditionalMappings(), []);
-    assert.deepStrictEqual(getGithubRepoHints(), []);
     assert.deepStrictEqual(getYamlSchemas(), {});
   });
 
@@ -57,9 +54,25 @@ suite('settings', () => {
   });
 });
 
-suite('getGithubAuthToken', () => {
-  test('resolves without throwing when no GitHub session is available', async () => {
-    const token = await getGithubAuthToken();
-    assert.ok(token === undefined || typeof token === 'string');
+suite('contributed configuration', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', '..', 'package.json'), 'utf8')) as {
+    contributes: { configuration: { properties: Record<string, { description?: string }> } };
+  };
+  const properties = pkg.contributes.configuration.properties;
+
+  test('declares exactly the remaining ylsSchemaLoader settings', () => {
+    assert.deepStrictEqual(Object.keys(properties).sort(), [
+      'ylsSchemaLoader.additionalMappings',
+      'ylsSchemaLoader.autoInsert',
+      'ylsSchemaLoader.enableFluxCatalog',
+      'ylsSchemaLoader.insertionMode',
+    ]);
+  });
+
+  test('the autoInsert description names the remaining sources and no removed one', () => {
+    assert.strictEqual(
+      properties['ylsSchemaLoader.autoInsert'].description,
+      'Automatically insert a schema as soon as one is resolved when a document is opened, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache). Off by default.'
+    );
   });
 });

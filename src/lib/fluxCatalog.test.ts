@@ -6,6 +6,7 @@ import {
   CatalogIndex,
   CatalogStore,
   createFluxCatalog,
+  FetchFn,
   FLUX_CATALOG_INDEX_URL,
   FLUX_CATALOG_RETRY_MS,
   FLUX_CATALOG_SCHEMA_BASE_URL,
@@ -13,7 +14,6 @@ import {
   fluxCatalogUrl,
   parseCatalogIndex,
 } from './fluxCatalog';
-import { FetchFn } from './githubDiscovery';
 
 const RAW_INDEX: unknown = JSON.parse(
   fs.readFileSync(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'flux-catalog-index.json'), 'utf8')

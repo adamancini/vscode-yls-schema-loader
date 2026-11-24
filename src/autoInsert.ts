@@ -5,25 +5,12 @@ import { resolveSchema, sessionCacheKey, ResolverDeps, DIRECT_APPLY_SOURCES } fr
 import { FluxCatalog } from './lib/fluxCatalog';
 import bundledMappingData from './lib/bundledMappingData.json';
 import { applyResolution } from './applySchema';
-import { getGithubAuthToken } from './githubAuth';
-import {
-  getAutoInsert,
-  getInsertionMode,
-  getEnableWebDiscovery,
-  getAdditionalMappings,
-  getGithubRepoHints,
-  getYamlSchemas,
-} from './settings';
-
-export interface AutoInsertOverrides {
-  fetchFn?: ResolverDeps['fetchFn'];
-}
+import { getAutoInsert, getInsertionMode, getAdditionalMappings, getYamlSchemas } from './settings';
 
 export async function autoInsertSchemas(
   document: vscode.TextDocument,
   sessionCache: Map<string, string>,
-  fluxCatalog: FluxCatalog,
-  overrides: AutoInsertOverrides = {}
+  fluxCatalog: FluxCatalog
 ): Promise<void> {
   if (document.languageId !== 'yaml' || !getAutoInsert()) {
     return;
@@ -38,10 +25,6 @@ export async function autoInsertSchemas(
     lookupFluxCatalog: (kind, apiVersion) => fluxCatalog.lookup(kind, apiVersion),
     bundledEntries: bundledMappingData,
     sessionCache,
-    enableWebDiscovery: getEnableWebDiscovery(),
-    githubHints: getGithubRepoHints(),
-    fetchFn: overrides.fetchFn ?? (fetch as ResolverDeps['fetchFn']),
-    getAuthToken: getGithubAuthToken,
   };
 
   // Bottom-to-top: inserting a comment above one document must not shift the line
@@ -51,8 +34,8 @@ export async function autoInsertSchemas(
     if (isCovered(text, doc.startLine, relativePath, yamlSchemas)) {
       continue;
     }
-    // Auto-insert extends the direct-apply trust boundary (resolver.ts) to run without the
-    // user even opening the quick-fix; a `github` resolution is never applied on its own.
+    // Auto-insert applies direct-apply sources (resolver.ts) without the user even opening
+    // the quick-fix; an 'unresolved' document is left untouched, with no prompt.
     const resolution = await resolveSchema(doc.kind, doc.apiVersion, deps);
     if (!DIRECT_APPLY_SOURCES.has(resolution.source) || !('url' in resolution)) {
       continue;

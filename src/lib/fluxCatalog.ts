@@ -1,4 +1,7 @@
-import { FetchFn } from './githubDiscovery';
+export type FetchFn = (
+  url: string,
+  init?: { headers?: Record<string, string> }
+) => Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }>;
 
 export const FLUX_CATALOG_INDEX_URL = 'https://schemas.fluxoperator.dev/index.json';
 export const FLUX_CATALOG_SCHEMA_BASE_URL = 'https://schemas.fluxoperator.dev/catalog';

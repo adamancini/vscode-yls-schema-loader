@@ -6,8 +6,7 @@ import { createInsertSchemaCommandHandler } from './insertSchemaCommand';
 import { autoInsertSchemas } from './autoInsert';
 import { SchemaCodeActionProvider } from './codeActionsProvider';
 import { INSERT_SCHEMA_COMMAND, INSERT_SCHEMA_FOR_CURRENT_DOCUMENT_COMMAND } from './commandIds';
-import { CachedCatalog, createFluxCatalog } from './lib/fluxCatalog';
-import { FetchFn } from './lib/githubDiscovery';
+import { CachedCatalog, createFluxCatalog, FetchFn } from './lib/fluxCatalog';
 import { getEnableFluxCatalog } from './settings';
 
 // Re-checking every open sub-document on every keystroke is wasted work on a large file.
@@ -38,7 +37,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // post-edit, already-covered state. Only wired to document *open* (and the initial
   // activation scan), not to every edit: auto-insert's own applyEdit already re-triggers
   // onDidChangeTextDocument, and its resolution can reach the network (the Flux schema
-  // catalog index fetch, GitHub discovery, CRDs-catalog), so running it on every debounced
+  // catalog index fetch), so running it on every debounced
   // keystroke would re-issue those requests for as long as an unresolved document stays
   // open. Diagnostics still refresh on every edit -- that path is local-only and never
   // touches the catalog or the network.
