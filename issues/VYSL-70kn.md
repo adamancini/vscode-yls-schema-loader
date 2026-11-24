@@ -4,11 +4,11 @@ title: "Resolve schemas from the Flux schema catalog index"
 status: closed
 priority: 1
 type: task
-labels: [walking-skeleton, delivered]
+labels: [walking-skeleton, delivered, accepted]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
-updated_at: 2026-11-24T17:15:27Z
+updated_at: 2026-11-24T17:15:28Z
 content_hash: "sha256:5bab240551f73494e89c7c7a5f2d311c3e14d88d16059dce2a385a2acff70b9a"
 assignee: dev-VYSL-70kn
 closed_at: 2026-11-24T17:15:27Z
