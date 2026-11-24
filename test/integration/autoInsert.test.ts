@@ -2,7 +2,14 @@ import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { autoInsertSchemas } from '../../src/autoInsert';
-import { createFixtureFluxCatalog, disableActivatedFluxCatalog, restoreFluxCatalogSetting } from './testUtils';
+import { FluxCatalog } from '../../src/lib/fluxCatalog';
+import {
+  createFixtureFluxCatalog,
+  disableActivatedFluxCatalog,
+  restoreFluxCatalogSetting,
+  staysFalseFor,
+  waitFor,
+} from './testUtils';
 
 const CATALOG_STAGE_URL = 'https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json';
 const CATALOG_WAREHOUSE_URL = 'https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/warehouse_v1alpha1.json';
@@ -153,5 +160,181 @@ suite('autoInsertSchemas: Flux schema catalog', () => {
     assert.strictEqual(doc.getText(), originalText);
     assert.strictEqual(sessionCache.size, 0);
     assert.deepStrictEqual(requestedUrls, []);
+  });
+});
+
+// Restore on open: a document with no inline directive in a file mapped under a URL key in
+// yaml.schemas gets that settings URL back as a comment, with no catalog lookup, no network,
+// no session-cache write and no yaml.schemas write. Schema URLs live on the reserved .invalid
+// host so nothing can be fetched.
+const SETTINGS_URL = 'https://schemas.example.invalid/restore-auto-stage.json';
+const SETTINGS_DIRECTIVE = `# yaml-language-server: $schema=${SETTINGS_URL}`;
+
+function relPath(name: string): string {
+  return `test/fixtures/${name}`;
+}
+
+function linesOf(doc: vscode.TextDocument): string[] {
+  return Array.from({ length: doc.lineCount }, (_, i) => doc.lineAt(i).text);
+}
+
+async function setYamlSchemas(value: Record<string, string | string[]> | undefined): Promise<void> {
+  await vscode.workspace.getConfiguration('yaml').update('schemas', value, vscode.ConfigurationTarget.Workspace);
+}
+
+async function setInsertionMode(mode: string | undefined): Promise<void> {
+  await vscode.workspace
+    .getConfiguration('ylsSchemaLoader')
+    .update('insertionMode', mode, vscode.ConfigurationTarget.Workspace);
+}
+
+// Wraps a catalog to record every lookup() call, so a test proves no lookup happened at all.
+function countingCatalog(inner: FluxCatalog): { catalog: FluxCatalog; lookups: string[] } {
+  const lookups: string[] = [];
+  return {
+    lookups,
+    catalog: {
+      lookup: (kind, apiVersion) => {
+        lookups.push(`${apiVersion}::${kind}`);
+        return inner.lookup(kind, apiVersion);
+      },
+    },
+  };
+}
+
+suite('autoInsertSchemas: restore the yaml.schemas directive on open', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(async () => {
+    const config = vscode.workspace.getConfiguration('ylsSchemaLoader');
+    await config.update('autoInsert', undefined, vscode.ConfigurationTarget.Workspace);
+    await setInsertionMode(undefined);
+    await setYamlSchemas(undefined);
+    await restoreFluxCatalogSetting();
+  });
+
+  // Direct-call tests open the document BEFORE configuring yaml.schemas and autoInsert, so the
+  // activated extension's own open handler leaves it alone (see the first suite).
+
+  test('comment mode, exact path: inserts the settings URL without consulting the catalog, the network or the session cache', async () => {
+    const doc = await vscode.workspace.openTextDocument(fixtureUri('restore-auto.yaml'));
+    await setYamlSchemas({ [SETTINGS_URL]: relPath('restore-auto.yaml') });
+    await enableAutoInsert();
+    // The fixture catalog knows kargo.akuity.io/v1alpha1 Stage, yet the settings URL wins.
+    const { catalog: inner, requestedUrls } = createFixtureFluxCatalog();
+    const { catalog, lookups } = countingCatalog(inner);
+    const sessionCache = new Map<string, string>();
+    await autoInsertSchemas(doc, sessionCache, catalog);
+    assert.deepStrictEqual(linesOf(doc), [
+      SETTINGS_DIRECTIVE,
+      'apiVersion: kargo.akuity.io/v1alpha1',
+      'kind: Stage',
+      'metadata:',
+      '  name: restore-auto',
+      '',
+    ]);
+    assert.deepStrictEqual(lookups, []);
+    assert.deepStrictEqual(requestedUrls, []);
+    assert.strictEqual(sessionCache.size, 0);
+  });
+
+  test('three documents: restores above the first and third bottom-to-top and leaves the second directive alone', async () => {
+    const doc = await vscode.workspace.openTextDocument(fixtureUri('restore-auto-multidoc.yaml'));
+    await setYamlSchemas({ [SETTINGS_URL]: [relPath('restore-auto-multidoc.yaml')] });
+    await enableAutoInsert();
+    await autoInsertSchemas(doc, new Map(), fixtureCatalog());
+    assert.deepStrictEqual(linesOf(doc), [
+      SETTINGS_DIRECTIVE,
+      'apiVersion: kargo.akuity.io/v1alpha1',
+      'kind: Stage',
+      'metadata:',
+      '  name: first',
+      '---',
+      '# yaml-language-server: $schema=https://schemas.example.invalid/existing.json',
+      'apiVersion: kargo.akuity.io/v1alpha1',
+      'kind: Warehouse',
+      'metadata:',
+      '  name: second',
+      '---',
+      SETTINGS_DIRECTIVE,
+      'apiVersion: kargo.akuity.io/v1alpha1',
+      'kind: Stage',
+      'metadata:',
+      '  name: third',
+      '',
+    ]);
+  });
+
+  test('both mode: inserts the comment and leaves yaml.schemas exactly as it was', async () => {
+    const doc = await vscode.workspace.openTextDocument(fixtureUri('restore-auto-both-mode.yaml'));
+    const mapping = { [SETTINGS_URL]: [relPath('restore-auto-both-mode.yaml')] };
+    await setYamlSchemas(mapping);
+    await setInsertionMode('both');
+    await enableAutoInsert();
+    const before: unknown = JSON.parse(JSON.stringify(vscode.workspace.getConfiguration('yaml').get('schemas')));
+    assert.deepStrictEqual(before, mapping);
+    await autoInsertSchemas(doc, new Map(), fixtureCatalog());
+    assert.strictEqual(doc.lineAt(0).text, SETTINGS_DIRECTIVE);
+    assert.strictEqual(doc.lineAt(1).text, 'apiVersion: kargo.akuity.io/v1alpha1');
+    assert.deepStrictEqual(vscode.workspace.getConfiguration('yaml').get('schemas'), before);
+  });
+
+  test('yamlSchemas mode: a settings-associated document is left untouched', async () => {
+    const doc = await vscode.workspace.openTextDocument(fixtureUri('restore-auto-yamlschemas-mode.yaml'));
+    const originalText = doc.getText();
+    await setYamlSchemas({ [SETTINGS_URL]: relPath('restore-auto-yamlschemas-mode.yaml') });
+    await setInsertionMode('yamlSchemas');
+    await enableAutoInsert();
+    const { catalog: inner, requestedUrls } = createFixtureFluxCatalog();
+    const { catalog, lookups } = countingCatalog(inner);
+    await autoInsertSchemas(doc, new Map(), catalog);
+    assert.strictEqual(doc.getText(), originalText);
+    assert.deepStrictEqual(lookups, []);
+    assert.deepStrictEqual(requestedUrls, []);
+  });
+
+  test('autoInsert off: a settings-associated document is left untouched', async () => {
+    const doc = await vscode.workspace.openTextDocument(fixtureUri('restore-auto-disabled.yaml'));
+    const originalText = doc.getText();
+    await setYamlSchemas({ [SETTINGS_URL]: relPath('restore-auto-disabled.yaml') });
+    await autoInsertSchemas(doc, new Map(), fixtureCatalog());
+    assert.strictEqual(doc.getText(), originalText);
+  });
+
+  test('an alias-only mapping (kubernetes) causes no insertion', async () => {
+    const doc = await vscode.workspace.openTextDocument(fixtureUri('restore-auto-disabled.yaml'));
+    const originalText = doc.getText();
+    await setYamlSchemas({ kubernetes: relPath('restore-auto-disabled.yaml') });
+    await enableAutoInsert();
+    await autoInsertSchemas(doc, new Map(), fixtureCatalog());
+    assert.strictEqual(doc.getText(), originalText);
+  });
+
+  test('regression: an unmapped document still gets the catalog URL through the resolver', async () => {
+    const doc = await vscode.workspace.openTextDocument(fixtureUri('restore-auto-unmapped.yaml'));
+    // yaml.schemas maps a different file, so this one is uncovered.
+    await setYamlSchemas({ [SETTINGS_URL]: relPath('restore-auto.yaml') });
+    await enableAutoInsert();
+    const sessionCache = new Map<string, string>();
+    await autoInsertSchemas(doc, sessionCache, fixtureCatalog());
+    assert.strictEqual(doc.lineAt(0).text, `# yaml-language-server: $schema=${CATALOG_STAGE_URL}`);
+    assert.strictEqual(sessionCache.get('kargo.akuity.io/v1alpha1::Stage'), CATALOG_STAGE_URL);
+  });
+
+  // No direct call: the activated extension's own onDidOpenTextDocument handler does the work.
+  test('real wiring: opening a mapped file restores the directive, and deleting it is not undone while open', async function () {
+    // waitFor (up to 4s) plus the 1s no-reinsert window exceed mocha's 2s default.
+    this.timeout(8000);
+    const name = 'restore-auto-activated.yaml';
+    await setYamlSchemas({ [SETTINGS_URL]: relPath(name) });
+    await enableAutoInsert();
+    const doc = await vscode.workspace.openTextDocument(fixtureUri(name));
+    await waitFor(() => doc.lineAt(0).text === SETTINGS_DIRECTIVE, 4000);
+    assert.strictEqual(doc.lineAt(1).text, 'apiVersion: kargo.akuity.io/v1alpha1');
+
+    const edit = new vscode.WorkspaceEdit();
+    edit.delete(doc.uri, new vscode.Range(0, 0, 1, 0));
+    assert.strictEqual(await vscode.workspace.applyEdit(edit), true);
+    assert.strictEqual(doc.lineAt(0).text, 'apiVersion: kargo.akuity.io/v1alpha1');
+    await staysFalseFor(() => doc.lineAt(0).text === SETTINGS_DIRECTIVE, 1000);
   });
 });

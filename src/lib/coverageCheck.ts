@@ -9,18 +9,6 @@ function patternsOf(value: string | string[]): string[] {
   return Array.isArray(value) ? value : [value];
 }
 
-export function isCovered(
-  text: string,
-  startLine: number,
-  relativePath: string,
-  yamlSchemas: YamlSchemasSetting
-): boolean {
-  if (hasSchemaComment(text, startLine)) {
-    return true;
-  }
-  return matchesAnyGlob(relativePath, Object.values(yamlSchemas).flatMap(patternsOf));
-}
-
 // Only these keys can be written as a directive: yaml-language-server reads any other value
 // (an alias such as `kubernetes`, a relative path) as a file path next to the document.
 const DIRECTIVE_URL_KEY = /^(https?:\/\/|file:)/i;

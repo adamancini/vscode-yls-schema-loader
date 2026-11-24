@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { parseKindApiVersions } from './lib/yamlDocParser';
-import { isCovered } from './lib/coverageCheck';
+import { coverageState } from './lib/coverageCheck';
 import { resolveSchema, sessionCacheKey, ResolverDeps, DIRECT_APPLY_SOURCES } from './lib/resolver';
 import { FluxCatalog } from './lib/fluxCatalog';
-import { applyResolution } from './applySchema';
+import { applyResolution, insertionModeWritesComment } from './applySchema';
 import { getAutoInsert, getInsertionMode, getAdditionalMappings, getYamlSchemas } from './settings';
 
 export async function autoInsertSchemas(
@@ -29,7 +29,21 @@ export async function autoInsertSchemas(
   // numbers of documents still waiting to be resolved later in this same pass.
   const docs = [...parseKindApiVersions(text)].reverse();
   for (const doc of docs) {
-    if (isCovered(text, doc.startLine, relativePath, yamlSchemas)) {
+    const coverage = coverageState(
+      text,
+      doc.startLine,
+      relativePath,
+      yamlSchemas,
+      insertionModeWritesComment(insertionMode)
+    );
+    if (coverage.state === 'covered') {
+      continue;
+    }
+    if (coverage.state === 'restorable') {
+      // The settings URL is user-configured, so it goes back as a comment only: the literal
+      // 'comment' keeps yaml.schemas untouched even in 'both' mode. No catalog lookup and no
+      // session-cache write -- the URL belongs to this file, not to the kind/apiVersion.
+      await applyResolution(document, doc.startLine, coverage.url, 'comment');
       continue;
     }
     // Auto-insert applies direct-apply sources (resolver.ts) without the user even opening
