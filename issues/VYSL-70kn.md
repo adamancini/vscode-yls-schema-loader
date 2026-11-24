@@ -8,8 +8,8 @@ labels: [walking-skeleton]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
-updated_at: 2026-11-24T16:27:51Z
-content_hash: "sha256:94089502569d654b45ddf386cf85e70dbf6a571ffdac393614951f49ebef1fd1"
+updated_at: 2026-11-24T16:30:18Z
+content_hash: "sha256:cb333011c8c433935b8515ff9966ee337849b3659dc2be622a803ea336ccf7ec"
 blocks: [VYSL-aqw2, VYSL-bhp3]
 ---
 
@@ -36,8 +36,8 @@ Catalog facts (verified 2026-11-24; do not re-derive, do confirm against the fix
   {"name":"flux","alias":"Flux","cat":4,"repo":"fluxcd/flux2","version":"v2.10.1","sha":"23dcfe98fe67","builtAt":"2026-11-20","groups":[{"g":"kustomize.toolkit.fluxcd.io","kinds":[["kustomization",["v1"],1,"Kustomization",{"n":["ks"]}]]},{"g":"notification.toolkit.fluxcd.io","kinds":[["alert",["v1","v1beta3"],3,"Alert"],["provider",["v1","v1beta3"],3,"Provider"],["receiver",["v1"],1,"Receiver"]]}]}
   {"name":"kubernetes","alias":"Kubernetes","cat":0,"repo":"kubernetes/kubernetes","version":"v1.37.2","groups":[{"g":"core","kinds":[["configmap",["v1"],1,"ConfigMap"]]},{"g":"apps","kinds":[["deployment",["v1"],1,"Deployment"]]}]}
   {"name":"argo","alias":"Argo","cat":4,"sources":[{"name":"argo-cd","alias":"Argo CD","repo":"argoproj/argo-cd","version":"v3.6.2","sha":"8e8268ef2f3d","builtAt":"2026-11-20"}],"groups":[{"g":"argoproj.io","kinds":[["applicationset",["v1alpha1"],1,"ApplicationSet",{"n":["appset","appsets"]}],["rollout",["v1alpha1"],1,"Rollout",{"n":["ro"]}]]}]}
-- Schema URL: https://schemas.fluxoperator.dev/catalog/<group>/<lowercaseKind>_<version>.json. Verified 200: catalog/apps/deployment_v1.json, catalog/core/configmap_v1.json, catalog/kargo.akuity.io/stage_v1alpha1.json, catalog/kustomize.toolkit.fluxcd.io/kustomization_v1.json. Original-case kind (Kustomization_v1.json) returns 404.
-- Groupless apiVersion: "v1" -> group "core", version "v1" (so v1 ConfigMap -> catalog/core/configmap_v1.json). The index has no entries under a literal group "v1".
+- Schema URL: https://schemas.fluxoperator.dev/catalog/<group>/<lowercaseKind>_<version>.json. Verified 200: https://schemas.fluxoperator.dev/catalog/apps/deployment_v1.json, https://schemas.fluxoperator.dev/catalog/core/configmap_v1.json, https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json, https://schemas.fluxoperator.dev/catalog/kustomize.toolkit.fluxcd.io/kustomization_v1.json. Original-case kind (Kustomization_v1.json) returns 404.
+- Groupless apiVersion: "v1" -> group "core", version "v1" (so v1 ConfigMap -> https://schemas.fluxoperator.dev/catalog/core/configmap_v1.json). The index has no entries under a literal group "v1".
 - kustomize.config.k8s.io/v1beta1 Kustomization is NOT in the catalog (404); it must fall through to the bundled mapping.
 
 IMPLEMENTATION:
@@ -63,7 +63,7 @@ IMPLEMENTATION:
    Behavior:
    - parseCatalogIndex projects the raw index to the compact CatalogIndex (merging groups that appear in more than one project). It returns undefined when raw is not an object, has no `projects` array, or yields zero groups. Malformed projects/groups/tuples are skipped, never thrown on. Store only this compact projection, never the raw 607 KB document: the projection of today's full index is about 306 KB as JSON, and VS Code discourages large globalState values.
    - fluxCatalogUrl splits apiVersion on the first "/": "<group>/<version>" or, with no "/", group "core" and version = the whole string. It returns `${FLUX_CATALOG_SCHEMA_BASE_URL}/${group}/${kind.toLowerCase()}_${version}.json` only when index[group][kind.toLowerCase()] includes version; otherwise undefined. It never returns a URL for a pair the index does not list.
-   - lookup(): if isEnabled() is false, return undefined immediately without reading the store or fetching. Otherwise make sure an index is loaded, then return fluxCatalogUrl(...). Loading order: in-memory copy -> store.get() -> fetch. A fetch is attempted only when there is no cached copy or the cached copy is older than FLUX_CATALOG_TTL_MS, and never sooner than FLUX_CATALOG_RETRY_MS after a failed attempt. Concurrent lookups share one in-flight fetch promise. On success: parse, keep in memory, store.set({ fetchedAt: now(), index }). On any failure (fetchFn rejects, response.ok false, json() throws, parse returns undefined): keep using the stale cached copy if one exists, otherwise resolve as "no index" (undefined). lookup() never rejects.
+   - lookup(): if isEnabled() is false, return undefined immediately without reading the store or fetching. Otherwise make sure an index is loaded, then return fluxCatalogUrl(...). Loading order: in-memory copy -> store.get() -> fetch. A fetch is attempted only when there is no cached copy or the cached copy is older than FLUX_CATALOG_TTL_MS, and never sooner than FLUX_CATALOG_RETRY_MS after a failed attempt. Concurrent lookups share one in-flight fetch promise. On success: parse, keep in memory, store.set({ fetchedAt: now(), index }). Error handling: on any failure (fetchFn rejects, response.ok false, json() throws, parse returns undefined): keep using the stale cached copy if one exists, otherwise resolve as "no index" (undefined). lookup() never rejects.
 
 2. src/lib/resolver.ts
    - Resolution gains `{ source: 'override'; url: string }` and `{ source: 'fluxCatalog'; url: string }`.
@@ -101,13 +101,15 @@ PRODUCES:
 - src/autoInsert.ts -> autoInsertSchemas(document, sessionCache, fluxCatalog, overrides?).
 - src/extension.ts -> single FluxCatalog instance backed by context.globalState key 'fluxCatalog.index'.
 - test/fixtures/flux-catalog-index.json -> trimmed real-shape catalog index fixture.
+- src/lib/fluxCatalog.test.ts -> unit tests for the catalog module.
+- test/fixtures/flux-catalog-branch.yaml -> Stage fixture for the quick-fix catalog test.
 - test/integration/testUtils.ts -> helper that disables the activated extension's real catalog for a suite.
 
 TESTING:
 Default coverage: unit + integration, test-first (write each failing test before the code). No real network in any test; no test may be skipped or gated on connectivity.
 Unit, src/lib/fluxCatalog.test.ts (injected fetchFn counting calls, in-memory store, injected now):
 - parseCatalogIndex: 4-tuple and 5-tuple kinds, multiple versions per kind, a project with `sources`, the same group in two projects merged; undefined for null, a string, {} and { projects: [] }; malformed tuples skipped.
-- fluxCatalogUrl: Stage kargo.akuity.io/v1alpha1; mixed-case kind lowercased (ApplicationSet -> applicationset); v1 ConfigMap -> core/configmap_v1.json; apps/v1 Deployment; Alert at v1beta3 and at v1; unknown group, unknown kind and unlisted version each undefined; kustomize.config.k8s.io/v1beta1 Kustomization undefined.
+- fluxCatalogUrl: Stage kargo.akuity.io/v1alpha1; mixed-case kind lowercased (ApplicationSet -> applicationset); v1 ConfigMap -> https://schemas.fluxoperator.dev/catalog/core/configmap_v1.json; Deployment at apiVersion apps/v1; Alert at v1beta3 and at v1; unknown group, unknown kind and unlisted version each undefined; kustomize.config.k8s.io/v1beta1 Kustomization undefined.
 - lookup: first call fetches FLUX_CATALOG_INDEX_URL once and writes the store; 10 concurrent lookups -> exactly 1 fetch; a fresh stored copy -> 0 fetches; a stored copy older than the TTL -> 1 fetch and the store is rewritten; stale copy + fetch rejects -> resolves from the stale copy; stale copy + HTTP 500 -> stale copy; no copy + fetch rejects -> undefined and no rejection; after a failure a second lookup inside FLUX_CATALOG_RETRY_MS does not fetch, and one after it does; unparseable body treated as a failure; isEnabled false -> 0 fetches and 0 store reads.
 Unit, src/lib/resolver.test.ts: an override beats a catalog hit for the same pair; a catalog hit beats a bundled entry for the same pair; bundled is used when the catalog returns undefined; session cache after bundled; lookupFluxCatalog is not called for an override hit; existing GitHub/CRDs-catalog tests still pass.
 Integration (real VS Code host, injected catalog over the fixture): quick-fix handler inserts `# yaml-language-server: $schema=https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json` for a Stage with no confirmation callback invoked and records it in the session cache; auto-insert with autoInsert=true applies the catalog URL on a Stage and applies a two-document file bottom-to-top with both lines correct; with a catalog whose isEnabled is false the same Stage resolves through the bundled entry instead; settings test asserts getEnableFluxCatalog() defaults to true.
