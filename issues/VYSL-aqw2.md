@@ -7,8 +7,8 @@ type: task
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
-updated_at: 2026-11-24T16:28:45Z
-content_hash: "sha256:72a8b6fb7e6dc76f02dd33c95d453ba1b7027ebc491f220c37c1e6a34211794e"
+updated_at: 2026-11-24T16:30:19Z
+content_hash: "sha256:886b9885d5d76a81c4d16c446ab4f621a6361b847031931de06b79ec045d97d6"
 blocked_by: [VYSL-70kn]
 blocks: [VYSL-bhp3]
 ---
@@ -98,7 +98,7 @@ Acceptance Criteria:
 1. [Ubiquitous] resolveSchema resolves through exactly: user overrides, Flux catalog, bundled mapping, session cache, then 'unresolved'; no code path performs GitHub API, GitHub code search, or raw.githubusercontent.com datreeio/CRDs-catalog requests.
 2. [Unwanted] The system shall not request a GitHub authentication session under any code path; no reference to vscode.authentication remains in src/.
 3. [Unwanted] The system shall not show a "Use this schema?" confirmation modal, a candidate quick pick, or a rate-limit Retry warning under any code path.
-4. [Event] When a kind/apiVersion resolves to 'unresolved', the quick-fix still prompts for a manual schema URL, applies it when one is entered, records it in the session cache, and applies nothing when the prompt is dismissed.
+4. [Event] When a kind/apiVersion resolves to 'unresolved', the quick-fix still displays the manual schema URL prompt so the user can enter one, applies it when one is entered, records it in the session cache, and applies nothing when the prompt is dismissed.
 5. [Event] When auto-insert meets an unresolved document it leaves the document unchanged and shows no prompt.
 6. [Ubiquitous] package.json no longer declares ylsSchemaLoader.enableWebDiscovery or ylsSchemaLoader.githubRepoHints, the autoInsert description names neither GitHub nor the CRDs-catalog, and src/settings.ts has no getter for the removed settings.
 7. [Ubiquitous] The 14 files listed in IMPLEMENTATION step 1 are deleted and FetchFn is exported from src/lib/fluxCatalog.ts with its signature unchanged.
