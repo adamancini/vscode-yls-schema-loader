@@ -8,8 +8,8 @@ labels: [walking-skeleton]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
-updated_at: 2026-11-24T16:30:18Z
-content_hash: "sha256:cb333011c8c433935b8515ff9966ee337849b3659dc2be622a803ea336ccf7ec"
+updated_at: 2026-11-24T16:34:01Z
+content_hash: "sha256:0e070eac3f8bb1b255b59d0d9c3329e150e0f746716cf652b04378f62c023658"
 blocks: [VYSL-aqw2, VYSL-bhp3]
 ---
 
@@ -18,7 +18,7 @@ Description:
 Walking skeleton. Add the Flux schema catalog as a resolver stage that sits after user overrides and before the bundled mapping, backed by a TTL-cached copy of the catalog index, gated by a new setting, and wired end-to-end into the quick-fix command and auto-insert as a direct-apply source.
 
 Context:
-The extension adamancini.yls-schema-loader (TypeScript, esbuild bundle, mocha) resolves a schema URL for each kind/apiVersion found in a YAML document. Today src/lib/resolver.ts runs: bundled mapping (user additionalMappings merged on top via mergeMappings) -> session cache -> GitHub heuristic -> datreeio/CRDs-catalog. This story inserts the Flux schema catalog and splits user overrides out in front of it. The GitHub and CRDs-catalog stages stay untouched here and are deleted by the next story; after this story the chain is:
+The extension adamancini.yls-schema-loader (TypeScript, esbuild bundle, mocha) resolves a schema URL for each kind/apiVersion found in a YAML document. Today src/lib/resolver.ts runs: bundled mapping (user additionalMappings merged on top via mergeMappings) -> session cache -> GitHub heuristic -> datreeio/CRDs-catalog. This story inserts the Flux schema catalog and splits user overrides out in front of it. The GitHub and CRDs-catalog stages stay untouched here and are deleted by the next story, and the bundled mapping stays in place here and is deleted entirely by the final story (the user wants no embedded schemas), so do not invest in it; after this story the chain is:
 user overrides -> Flux catalog -> bundled -> session cache -> (existing GitHub -> CRDs-catalog tail, unchanged).
 
 Two project patterns apply and are the reason for most of the acceptance criteria:
@@ -84,7 +84,7 @@ Modify: src/lib/resolver.ts, src/lib/resolver.test.ts, src/lib/bundledMapping.ts
 
 OUT OF SCOPE:
 - Deleting the GitHub heuristic, CRDs-catalog stage, githubAuth, confirm flow, enableWebDiscovery, githubRepoHints: next story. Leave them compiling and passing.
-- Pruning src/lib/bundledMappingData.json, README, CHANGELOG, version bump: final story.
+- Removing the bundled mapping (src/lib/bundledMapping.ts, src/lib/bundledMappingData.json), README, CHANGELOG, version bump: final story.
 - ETag / If-None-Match revalidation: the FetchFn type exposes no headers; the user asked for it only if trivial. Never.
 - Fetching the index eagerly at activation, a bundled snapshot of the index, a catalog browsing UI, telemetry, version pinning: excluded by the user's "keep the scope simple".
 - Verifying that an individual schema URL exists before applying it: the index is the source of truth for coverage; no per-lookup request.
