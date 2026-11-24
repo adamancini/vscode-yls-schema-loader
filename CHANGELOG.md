@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.3
+
+- Fix: choosing the quick-fix from the diagnostic hover's "Quick Fix…" menu
+  did nothing; only the gutter lightbulb worked. The hover menu applies a
+  quick-fix's edit but never runs its command, so the quick-fix now carries
+  the schema comment as an edit. Kinds that need a manual URL, and the
+  `yamlSchemas` insertion mode, still require the lightbulb.
+
 ## 0.3.2
 
 - Copyedited the README, changelog and setting descriptions for clarity. No
