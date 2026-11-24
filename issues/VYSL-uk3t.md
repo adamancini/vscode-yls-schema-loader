@@ -9,7 +9,7 @@ parent: VYSL-0jlx
 created_at: 2026-11-24T19:14:53Z
 created_by: ada
 updated_at: 2026-11-24T19:31:18Z
-content_hash: "sha256:3f8be0fb0869ecdcc26ea616867c5b88b61e99aaebc23ef4f78c2171025fcde5"
+content_hash: "sha256:7e7f7a834b9d4a47bc8cc0831cd381a31f7b62bc76159563a059d4259727c0bc"
 was_blocked_by: [VYSL-sqhc]
 assignee: dev-VYSL-uk3t
 follows: [VYSL-sqhc]
@@ -145,6 +145,16 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 
 ## Notes
+
+
+## nd_contract
+status: delivered
+
+### evidence
+- Transitioned via pvg story deliver on 2026-11-24.
+
+### proof
+- [ ] Developer evidence block must remain authoritative above this contract.
 
 
 ## History
