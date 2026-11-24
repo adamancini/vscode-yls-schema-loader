@@ -7,8 +7,8 @@ type: task
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
-updated_at: 2026-11-24T17:23:04Z
-content_hash: "sha256:19af4fcac4e217a07f922fd6339959f1a9231f65e62417139ce2e1bfdf3cb8c3"
+updated_at: 2026-11-24T17:23:05Z
+content_hash: "sha256:9a9b9a5f5fade366e0c9d200ebbfe20cb63025a3a3fdca13788aac9252551b43"
 blocks: [VYSL-bhp3]
 was_blocked_by: [VYSL-70kn]
 assignee: dev-VYSL-aqw2
@@ -150,3 +150,57 @@ status: delivered
 - Follows: [[VYSL-70kn]]
 
 ## Comments
+
+### 2026-11-24T17:23:05Z ada
+DELIVERED: VYSL-aqw2 at commit 718fba738a9f48cf5aca12a29b4d6dd099a0eb0a (story/VYSL-aqw2, pushed)
+
+PROOF:
+Commands, all run from the worktree at SHA 718fba7, in this order:
+- `rm -rf out && npm run compile`: exit 0, no errors
+- `npm run lint`: exit 0, no warnings
+- `npx prettier --check src test package.json`: "All matched files use Prettier code style!"
+- `npm test` (pretest = compile + bundle, then unit mocha and vscode-test): exit 0
+  - unit: 82 passing, 0 failing, 0 pending
+  - integration (VS Code extension host): 25 passing, 0 failing, 0 pending; host exited with code 0
+- `npm run bundle`: exit 0. dist/extension.js contains no api.github.com and no vscode.authentication. Its only "authentication" hits are the istio PeerAuthentication/RequestAuthentication bundled-mapping entries.
+- `pvg verify --include-tests --format text <13 changed files>`: VERIFY: PASSED (12 files scanned, 0 issues)
+- `pvg settings verify.command`: empty, so the project declares no verify workflow
+- Coverage: the project has no coverage tool configured (no c8/nyc), so there is no percentage to report.
+- No test reaches the real network. The suites use createFixtureFluxCatalog (a stub fetch serving the fixture index) and disableActivatedFluxCatalog. No test is skipped.
+- Test-first: I edited the tests to describe the final chain first. `npm run compile` then failed (ResolverDeps still required enableWebDiscovery; FetchFn was not yet exported from fluxCatalog). The code deletion turned it green.
+
+Proof of removal: `rg -n -i "github|crds|webdiscovery|confirmCandidate|getAuthToken|RepoHint" src test package.json`, matches per file:
+   3 package.json   (repository.url, bugs.url, homepage: the repo's own github.com URLs; package metadata, not discovery)
+  52 src/lib/bundledMappingData.json   (bundled schema URLs: permitted)
+  12 src/lib/bundledMapping.test.ts    (asserts bundled URLs: permitted)
+   2 test/integration/autoInsert.test.ts   (STAGE/WAREHOUSE bundled kargo raw.githubusercontent URLs: permitted)
+   1 test/integration/applySchema.test.ts  (bundled kargo stage URL: permitted)
+   1 test/integration/codeActions.test.ts  (bundled kargo stage URL: permitted)
+There are no other matches. The 3 package.json hits are repo metadata, which the story's permitted-match list did not anticipate. Removing them would break the marketplace links, so I left them in place. Extra checks: `rg "authentication|'error'|Retry|showQuickPick|Use this schema" src test` matches only bundledMappingData.json (istio peer/requestauthentication URLs).
+
+AC verification:
+| AC | Evidence |
+|----|----------|
+| 1 chain override, fluxCatalog, bundled, sessionCache, unresolved; no GitHub/CRDs requests | src/lib/resolver.ts tail now returns 'unresolved'. resolver.test.ts covers each stage, the order tests, and "resolves (does not reject) to unresolved when lookupFluxCatalog resolves undefined". githubDiscovery and crdsCatalogDiscovery are deleted. |
+| 2 no GitHub auth session | githubAuth.ts deleted. No vscode.authentication in src/ (rg). |
+| 3 no confirm modal / quick pick / Retry | confirmCandidate.ts deleted. Retry loop and github branch removed from insertSchemaCommand.ts. rg shows no Retry/showQuickPick. |
+| 4 unresolved: manual prompt, apply, cache; nothing on dismiss | insertSchemaCommandBranches "applies the manually-entered URL ... and records it in the session cache" and "applies nothing when the manual-entry prompt is dismissed" (asserts unchanged text and an empty cache). The fixture catalog does not list Widget. |
+| 5 auto-insert leaves an unresolved doc unchanged, no prompt | autoInsert "does not apply anything when nothing resolves". autoInsert has no prompt path. |
+| 6 settings removed; autoInsert description; no getters | package.json diff. settings.test "declares exactly the remaining ylsSchemaLoader settings" and "the autoInsert description names the remaining sources and no removed one". The getters are deleted from settings.ts. |
+| 7 14 files deleted; FetchFn exported from fluxCatalog.ts unchanged | git show --stat 718fba7 lists all 14 deletions. FetchFn is exported verbatim at the top of src/lib/fluxCatalog.ts. |
+| 8 quick-fix still offered and direct-apply works | "SchemaCodeActionProvider (registered, headless)" passes. "insertSchema command: inserts a schema comment for a bundled-mapping match" and the "fluxCatalog branch" test (no prompt) pass. |
+| 9 extension.ts subscriptions unchanged | The extension.ts diff touches only the FetchFn import line and one comment line. |
+| 10 rg proof + gates | Above. |
+
+Wiring: autoInsertSchemas(doc, sessionCache, fluxCatalog) is still called from handleDocumentOpen in src/extension.ts (onDidOpenTextDocument). createInsertSchemaCommandHandler is still registered as the insertSchema command. The integration suites run through the activated extension host.
+
+Scope note: three files the story did not list also imported FetchFn from githubDiscovery: src/extension.ts, src/lib/fluxCatalog.test.ts and test/integration/testUtils.ts. FetchFn was moved, not deleted, so I changed only their import paths. No deleted symbol is kept alive anywhere.
+
+Diff: 27 files changed, 91 insertions(+), 1049 deletions(-).
+
+LEARNINGS:
+- In this session the pvg guard treats the developer as the dispatcher and blocks `cd <worktree>`. `git -C` and `npm --prefix <worktree>` work, and npm still runs the scripts with the worktree as cwd, so the relative `find out/src/lib` in test:unit resolves correctly.
+- FetchFn had more importers than the story's trace found (extension.ts, fluxCatalog.test.ts, testUtils.ts). For a "move this type" step, grep for every importer instead of trusting the list.
+- The story's rg proof pattern also matches the repo's own github.com URLs in package.json metadata. The final story's proof needs to allow for them, or narrow the pattern.
+- A package.json contributes test (reading the file from the test host) is a cheap way to pin removed settings and description text.
+- The VS Code test host prints DEP0169 url.parse and AgentHostCustomizationMarketplace stderr noise. It comes from the host itself, not from extension code (rg finds no url.parse in src).
