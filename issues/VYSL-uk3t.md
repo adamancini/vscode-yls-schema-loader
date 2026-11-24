@@ -8,8 +8,8 @@ labels: [capstone]
 parent: VYSL-0jlx
 created_at: 2026-11-24T19:14:53Z
 created_by: ada
-updated_at: 2026-11-24T19:14:53Z
-content_hash: "sha256:75609aa57d0ac965551c0f2df96f0edbabdaa373d7d3241658d3d5fd641d6cad"
+updated_at: 2026-11-24T19:15:24Z
+content_hash: "sha256:c5b644eaffda4dc6790b86162af5613417f8abeefee206c52b913ffc62febbd3"
 blocked_by: [VYSL-sqhc]
 ---
 
@@ -83,7 +83,12 @@ CONSUMES:
 
 PRODUCES:
 - src/autoInsert.ts -> `autoInsertSchemas` restores restorable documents on open with the settings URL, comment only (signature unchanged).
-- test/fixtures/restore-auto.yaml, test/fixtures/restore-auto-multidoc.yaml, test/fixtures/restore-auto-both-mode.yaml, test/fixtures/restore-auto-yamlschemas-mode.yaml, test/fixtures/restore-auto-disabled.yaml, test/fixtures/restore-auto-activated.yaml -> fixtures (Kargo Stage documents; the multidoc one holds three documents: first and third without a directive, second with one).
+- test/fixtures/restore-auto.yaml -> fixture, one Kargo Stage document without a directive
+- test/fixtures/restore-auto-multidoc.yaml -> fixture, three documents: first and third without a directive, second with one
+- test/fixtures/restore-auto-both-mode.yaml -> fixture, one Kargo Stage document, both-mode test only
+- test/fixtures/restore-auto-yamlschemas-mode.yaml -> fixture, one Kargo Stage document, yamlSchemas-mode test only
+- test/fixtures/restore-auto-disabled.yaml -> fixture, one Kargo Stage document, autoInsert-off and alias-only tests (never mutated)
+- test/fixtures/restore-auto-activated.yaml -> fixture, one Kargo Stage document, real-wiring test only
 - package.json, package-lock.json -> version 0.4.0; new `ylsSchemaLoader.autoInsert` description.
 - README.md, CHANGELOG.md -> 0.4.0 documentation.
 
