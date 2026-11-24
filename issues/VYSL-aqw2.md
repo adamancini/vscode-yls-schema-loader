@@ -12,7 +12,7 @@ content_hash: "sha256:6a3ba008447e0f37b467caad65c3ad03254125126055f235826280193d
 was_blocked_by: [VYSL-70kn]
 assignee: dev-VYSL-aqw2
 follows: [VYSL-70kn]
-labels: [delivered]
+labels: [delivered, accepted]
 closed_at: 2026-11-24T17:24:15Z
 close_reason: "Accepted: GitHub heuristic and CRDs-catalog stages removed; chain is override, fluxCatalog, bundled, sessionCache, unresolved; proof SHA-matched, 82 unit + 25 integration pass"
 ---
