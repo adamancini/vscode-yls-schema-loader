@@ -8,8 +8,8 @@ labels: [walking-skeleton, accepted]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
-updated_at: 2026-11-24T17:15:29Z
-content_hash: "sha256:5bab240551f73494e89c7c7a5f2d311c3e14d88d16059dce2a385a2acff70b9a"
+updated_at: 2026-11-24T17:15:31Z
+content_hash: "sha256:9bc4cc6fe3845a42e5caeb14be578aad716d9736a8a62d8e5d67e805879b8e64"
 assignee: dev-VYSL-70kn
 closed_at: 2026-11-24T17:15:27Z
 close_reason: "Accepted via pvg story accept"
@@ -144,6 +144,16 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 
 ## Notes
+
+
+## nd_contract
+status: accepted
+
+### evidence
+- PM closeout applied via pvg story accept on 2026-11-24.
+
+### proof
+- [x] Story closed after accepted label was applied.
 
 
 ## nd_contract
