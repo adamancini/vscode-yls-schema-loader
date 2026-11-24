@@ -9,7 +9,8 @@ parent: VYSL-0jlx
 created_at: 2026-11-24T19:13:54Z
 created_by: ada
 updated_at: 2026-11-24T19:13:54Z
-content_hash: "sha256:df507fde69e8c22645bb7e2180887004f74a5298eca57a3292fbc3a66c670f24"
+content_hash: "sha256:1122542241b5f8e8196b8e6eda31116dc59d4e233634cfe0881fa1fc6486ce63"
+blocks: [VYSL-uk3t]
 ---
 
 ## Description
@@ -149,9 +150,10 @@ PROCESS (applies to every step):
 
 
 ## History
-
+- 2026-11-24T19:14:53Z dep_added: blocks VYSL-uk3t
 
 ## Links
 - Parent: [[VYSL-0jlx]]
+- Blocks: [[VYSL-uk3t]]
 
 ## Comments
