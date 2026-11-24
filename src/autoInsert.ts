@@ -3,7 +3,6 @@ import { parseKindApiVersions } from './lib/yamlDocParser';
 import { isCovered } from './lib/coverageCheck';
 import { resolveSchema, sessionCacheKey, ResolverDeps, DIRECT_APPLY_SOURCES } from './lib/resolver';
 import { FluxCatalog } from './lib/fluxCatalog';
-import bundledMappingData from './lib/bundledMappingData.json';
 import { applyResolution } from './applySchema';
 import { getAutoInsert, getInsertionMode, getAdditionalMappings, getYamlSchemas } from './settings';
 
@@ -23,7 +22,6 @@ export async function autoInsertSchemas(
   const deps: ResolverDeps = {
     overrideEntries: getAdditionalMappings(),
     lookupFluxCatalog: (kind, apiVersion) => fluxCatalog.lookup(kind, apiVersion),
-    bundledEntries: bundledMappingData,
     sessionCache,
   };
 

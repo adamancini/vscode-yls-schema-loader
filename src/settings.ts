@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { MappingEntry } from './lib/bundledMapping';
+import { MappingEntry } from './lib/resolver';
 import { YamlSchemasSetting } from './lib/coverageCheck';
 
 export type InsertionMode = 'comment' | 'yamlSchemas' | 'both';

@@ -56,6 +56,36 @@ suite('insertSchema command: unresolved branch', () => {
   });
 });
 
+suite('insertSchema command: catalog disabled, no override', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
+  test('a Stage reaches the manual-URL prompt and nothing is inserted on its own', async () => {
+    const uri = fixtureUri('catalog-disabled-manual-branch.yaml');
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const originalText = doc.getText();
+    const sessionCache = new Map<string, string>();
+    const diagnostics = createDiagnosticsProvider();
+    const { catalog, requestedUrls } = createFixtureFluxCatalog(false);
+    let prompted = false;
+    try {
+      const handler = createInsertSchemaCommandHandler(sessionCache, diagnostics, catalog, {
+        promptManualUrl: async () => {
+          prompted = true;
+          return undefined;
+        },
+      });
+      await handler(uri, 0);
+      assert.strictEqual(prompted, true);
+      assert.strictEqual(doc.getText(), originalText);
+      assert.strictEqual(sessionCache.size, 0);
+      assert.deepStrictEqual(requestedUrls, []);
+    } finally {
+      diagnostics.dispose();
+    }
+  });
+});
+
 suite('insertSchema command: fluxCatalog branch', () => {
   setup(disableActivatedFluxCatalog);
   teardown(restoreFluxCatalogSetting);

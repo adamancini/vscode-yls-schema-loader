@@ -1,27 +1,38 @@
 import * as assert from 'assert';
-import { resolveSchema, sessionCacheKey, ResolverDeps, DIRECT_APPLY_SOURCES } from './resolver';
-import { MappingEntry } from './bundledMapping';
+import {
+  resolveSchema,
+  resolveOverride,
+  sessionCacheKey,
+  ResolverDeps,
+  MappingEntry,
+  DIRECT_APPLY_SOURCES,
+} from './resolver';
 
 function baseDeps(overrides: Partial<ResolverDeps> = {}): ResolverDeps {
   return {
     overrideEntries: [],
     lookupFluxCatalog: async () => undefined,
-    bundledEntries: [],
     sessionCache: new Map<string, string>(),
     ...overrides,
   };
 }
 
-suite('resolveSchema', () => {
-  test('resolves from the bundled mapping', async () => {
-    const bundledEntries: MappingEntry[] = [
-      { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url: 'https://bundled.example.com/stage.json' },
-    ];
-    const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ bundledEntries }));
-    assert.deepStrictEqual(result, { source: 'bundled', url: 'https://bundled.example.com/stage.json' });
+suite('resolveOverride', () => {
+  const entries: MappingEntry[] = [
+    { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url: 'https://example.com/stage.json' },
+  ];
+
+  test('returns the URL for a known kind/apiVersion pair', () => {
+    assert.strictEqual(resolveOverride(entries, 'Stage', 'kargo.akuity.io/v1alpha1'), 'https://example.com/stage.json');
   });
 
-  test('resolves from the session cache when not in the bundled mapping', async () => {
+  test('returns undefined for an unknown pair', () => {
+    assert.strictEqual(resolveOverride(entries, 'Warehouse', 'kargo.akuity.io/v1alpha1'), undefined);
+  });
+});
+
+suite('resolveSchema', () => {
+  test('resolves from the session cache when nothing earlier matches', async () => {
     const sessionCache = new Map<string, string>();
     sessionCache.set(sessionCacheKey('Stage', 'kargo.akuity.io/v1alpha1'), 'https://cached.example.com/stage.json');
     const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ sessionCache }));
@@ -44,15 +55,29 @@ suite('resolveSchema', () => {
     const result = await resolveSchema('Stage', 'kargo.akuity.io/v1alpha1', baseDeps({ sessionCache }));
     assert.deepStrictEqual(result, { source: 'unresolved' });
   });
+
+  test('the native kustomize Kustomization is unresolved when no override maps it (nothing is shipped)', async () => {
+    const result = await resolveSchema('Kustomization', 'kustomize.config.k8s.io/v1beta1', baseDeps());
+    assert.deepStrictEqual(result, { source: 'unresolved' });
+  });
+
+  test('the native kustomize Kustomization resolves through a user override', async () => {
+    const url = 'https://override.example.com/kustomization.json';
+    const result = await resolveSchema(
+      'Kustomization',
+      'kustomize.config.k8s.io/v1beta1',
+      baseDeps({ overrideEntries: [{ kind: 'Kustomization', apiVersion: 'kustomize.config.k8s.io/v1beta1', url }] })
+    );
+    assert.deepStrictEqual(result, { source: 'override', url });
+  });
 });
 
 const STAGE = { kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1' };
 const OVERRIDE_URL = 'https://override.example.com/stage.json';
 const CATALOG_URL = 'https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json';
-const BUNDLED_URL = 'https://bundled.example.com/stage.json';
 const CACHED_URL = 'https://cached.example.com/stage.json';
 
-suite('resolveSchema source order (override -> fluxCatalog -> bundled -> sessionCache -> unresolved)', () => {
+suite('resolveSchema source order (override -> fluxCatalog -> sessionCache -> unresolved)', () => {
   test('an override beats a catalog hit for the same pair', async () => {
     const result = await resolveSchema(
       STAGE.kind,
@@ -63,38 +88,6 @@ suite('resolveSchema source order (override -> fluxCatalog -> bundled -> session
       })
     );
     assert.deepStrictEqual(result, { source: 'override', url: OVERRIDE_URL });
-  });
-
-  test('a catalog hit beats a bundled entry for the same pair', async () => {
-    const result = await resolveSchema(
-      STAGE.kind,
-      STAGE.apiVersion,
-      baseDeps({
-        bundledEntries: [{ ...STAGE, url: BUNDLED_URL }],
-        lookupFluxCatalog: async (kind, apiVersion) =>
-          kind === STAGE.kind && apiVersion === STAGE.apiVersion ? CATALOG_URL : undefined,
-      })
-    );
-    assert.deepStrictEqual(result, { source: 'fluxCatalog', url: CATALOG_URL });
-  });
-
-  test('the bundled entry is used when the catalog returns undefined', async () => {
-    const result = await resolveSchema(
-      STAGE.kind,
-      STAGE.apiVersion,
-      baseDeps({ bundledEntries: [{ ...STAGE, url: BUNDLED_URL }], lookupFluxCatalog: async () => undefined })
-    );
-    assert.deepStrictEqual(result, { source: 'bundled', url: BUNDLED_URL });
-  });
-
-  test('a bundled entry beats the session cache for the same pair', async () => {
-    const sessionCache = new Map<string, string>([[sessionCacheKey(STAGE.kind, STAGE.apiVersion), CACHED_URL]]);
-    const result = await resolveSchema(
-      STAGE.kind,
-      STAGE.apiVersion,
-      baseDeps({ bundledEntries: [{ ...STAGE, url: BUNDLED_URL }], sessionCache })
-    );
-    assert.deepStrictEqual(result, { source: 'bundled', url: BUNDLED_URL });
   });
 
   test('a catalog hit beats the session cache for the same pair', async () => {
@@ -125,7 +118,7 @@ suite('resolveSchema source order (override -> fluxCatalog -> bundled -> session
 });
 
 suite('DIRECT_APPLY_SOURCES', () => {
-  test('is exactly override, fluxCatalog, bundled and sessionCache', () => {
-    assert.deepStrictEqual([...DIRECT_APPLY_SOURCES].sort(), ['bundled', 'fluxCatalog', 'override', 'sessionCache']);
+  test('is exactly override, fluxCatalog and sessionCache', () => {
+    assert.deepStrictEqual([...DIRECT_APPLY_SOURCES].sort(), ['fluxCatalog', 'override', 'sessionCache']);
   });
 });

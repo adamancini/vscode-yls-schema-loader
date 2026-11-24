@@ -4,20 +4,15 @@ import * as vscode from 'vscode';
 import { autoInsertSchemas } from '../../src/autoInsert';
 import { createFixtureFluxCatalog, disableActivatedFluxCatalog, restoreFluxCatalogSetting } from './testUtils';
 
-const STAGE_SCHEMA_URL =
-  'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/stages.kargo.akuity.io_v1alpha1.json';
 const CATALOG_STAGE_URL = 'https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json';
 const CATALOG_WAREHOUSE_URL = 'https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/warehouse_v1alpha1.json';
-const WAREHOUSE_SCHEMA_URL =
-  'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/warehouses.kargo.akuity.io_v1alpha1.json';
 
 function fixtureUri(name: string): vscode.Uri {
   return vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', name));
 }
 
-// The bundled-mapping scenarios run with the catalog switched off, so they keep exercising
-// the stage behind it.
 const disabledCatalog = () => createFixtureFluxCatalog(false).catalog;
+const fixtureCatalog = () => createFixtureFluxCatalog().catalog;
 
 async function enableAutoInsert(): Promise<void> {
   await vscode.workspace
@@ -45,21 +40,21 @@ suite('autoInsertSchemas', () => {
     assert.strictEqual(doc.lineAt(0).text, originalFirstLine);
   });
 
-  test('applies a bundled-mapping match automatically when enabled', async () => {
+  test('applies a catalog match automatically when enabled', async () => {
     const uri = fixtureUri('auto-insert-bundled.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
     await enableAutoInsert();
-    await autoInsertSchemas(doc, new Map(), disabledCatalog());
-    assert.strictEqual(doc.lineAt(0).text, `# yaml-language-server: $schema=${STAGE_SCHEMA_URL}`);
+    await autoInsertSchemas(doc, new Map(), fixtureCatalog());
+    assert.strictEqual(doc.lineAt(0).text, `# yaml-language-server: $schema=${CATALOG_STAGE_URL}`);
   });
 
-  test('populates the session cache for a bundled-mapping match', async () => {
+  test('populates the session cache for a catalog match', async () => {
     const uri = fixtureUri('auto-insert-bundled-session-cache.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
     await enableAutoInsert();
     const sessionCache = new Map<string, string>();
-    await autoInsertSchemas(doc, sessionCache, disabledCatalog());
-    assert.strictEqual(sessionCache.get('kargo.akuity.io/v1alpha1::Stage'), STAGE_SCHEMA_URL);
+    await autoInsertSchemas(doc, sessionCache, fixtureCatalog());
+    assert.strictEqual(sessionCache.get('kargo.akuity.io/v1alpha1::Stage'), CATALOG_STAGE_URL);
   });
 
   test('does not apply anything when nothing resolves -- leaves the document unresolved', async () => {
@@ -82,17 +77,17 @@ suite('autoInsertSchemas', () => {
     const uri = fixtureUri('auto-insert-multidoc.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
     await enableAutoInsert();
-    await autoInsertSchemas(doc, new Map(), disabledCatalog());
+    await autoInsertSchemas(doc, new Map(), fixtureCatalog());
 
     const lines = Array.from({ length: doc.lineCount }, (_, i) => doc.lineAt(i).text);
     assert.deepStrictEqual(lines, [
-      `# yaml-language-server: $schema=${STAGE_SCHEMA_URL}`,
+      `# yaml-language-server: $schema=${CATALOG_STAGE_URL}`,
       'apiVersion: kargo.akuity.io/v1alpha1',
       'kind: Stage',
       'metadata:',
       '  name: auto-insert-multidoc-stage',
       '---',
-      `# yaml-language-server: $schema=${WAREHOUSE_SCHEMA_URL}`,
+      `# yaml-language-server: $schema=${CATALOG_WAREHOUSE_URL}`,
       'apiVersion: kargo.akuity.io/v1alpha1',
       'kind: Warehouse',
       'metadata:',
@@ -148,12 +143,15 @@ suite('autoInsertSchemas: Flux schema catalog', () => {
     assert.strictEqual(requestedUrls.length, 1);
   });
 
-  test('with the catalog disabled, the same Stage resolves through the bundled entry and nothing is fetched', async () => {
+  test('catalog disabled and no override -> Stage is unresolved and auto-insert leaves the document untouched', async () => {
     const doc = await vscode.workspace.openTextDocument(fixtureUri('auto-insert-flux-catalog-disabled.yaml'));
+    const originalText = doc.getText();
     await enableAutoInsert();
     const { catalog, requestedUrls } = createFixtureFluxCatalog(false);
-    await autoInsertSchemas(doc, new Map(), catalog);
-    assert.strictEqual(doc.lineAt(0).text, `# yaml-language-server: $schema=${STAGE_SCHEMA_URL}`);
+    const sessionCache = new Map<string, string>();
+    await autoInsertSchemas(doc, sessionCache, catalog);
+    assert.strictEqual(doc.getText(), originalText);
+    assert.strictEqual(sessionCache.size, 0);
     assert.deepStrictEqual(requestedUrls, []);
   });
 });
