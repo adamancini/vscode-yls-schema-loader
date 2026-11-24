@@ -8,9 +8,9 @@ parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
 updated_at: 2026-11-24T17:03:16Z
-content_hash: "sha256:57cc5a1eef47a487f1b733dd32e34f0dc5558eef724bb99d2661eae108e80394"
-blocked_by: [VYSL-70kn]
+content_hash: "sha256:a9674763c0a5f5a77df260aa387fa26ce73fb2ae473e0bcf4fb6198139d374b4"
 blocks: [VYSL-bhp3]
+was_blocked_by: [VYSL-70kn]
 ---
 
 ## Description
@@ -124,10 +124,11 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 ## History
 - 2026-11-24T16:28:46Z dep_added: blocked_by VYSL-70kn
 - 2026-11-24T16:30:01Z dep_added: blocks VYSL-bhp3
+- 2026-11-24T17:15:27Z dep_removed: was_blocked_by VYSL-70kn
 
 ## Links
 - Parent: [[VYSL-gvc0]]
 - Blocks: [[VYSL-bhp3]]
-- Blocked by: [[VYSL-70kn]]
+- Was blocked by: [[VYSL-70kn]]
 
 ## Comments
