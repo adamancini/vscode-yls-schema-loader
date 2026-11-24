@@ -9,7 +9,7 @@ parent: VYSL-0jlx
 created_at: 2026-11-24T19:14:53Z
 created_by: ada
 updated_at: 2026-11-24T19:32:38Z
-content_hash: "sha256:41341b44fd793a78ddc47acfca4b4c510936bda5f4aaedbcde14ab74f36bb19d"
+content_hash: "sha256:8a095cbd221b2ddd17cee84e4d3b14814a1e8a81002ef1779a25c52a7d7e64a9"
 was_blocked_by: [VYSL-sqhc]
 assignee: dev-VYSL-uk3t
 follows: [VYSL-sqhc]
@@ -147,6 +147,16 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 
 ## Notes
+
+
+## nd_contract
+status: accepted
+
+### evidence
+- PM closeout applied via pvg story accept on 2026-11-24.
+
+### proof
+- [x] Story closed after accepted label was applied.
 
 
 ## nd_contract
