@@ -8,8 +8,8 @@ labels: [capstone]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:30:01Z
 created_by: ada
-updated_at: 2026-11-24T16:30:01Z
-content_hash: "sha256:a5e8319cb3fcdefbf881436313ccfbefe93e4acfe41782c88bd67c6394afed60"
+updated_at: 2026-11-24T16:30:19Z
+content_hash: "sha256:db98f9a3ec8665f354ef9bc7e5ab651d63d4ccfa5d1e776c13cf4520220cedec"
 blocked_by: [VYSL-70kn, VYSL-aqw2]
 ---
 
@@ -47,7 +47,7 @@ IMPLEMENTATION:
    - Known limitations: remove the GitHub discovery bullet; reword the first bullet to "schemas come from your overrides, the Flux schema catalog, or the bundled mapping, not kubectl get crd".
 6. CHANGELOG.md: add a `## 0.3.0` section at the top covering: Flux schema catalog is now the primary source (with the resolver order); catalog matches apply directly and are eligible for autoInsert; index cached for 24 hours in global state, stale copy used offline, never fetched per edit; new setting ylsSchemaLoader.enableFluxCatalog; REMOVED: GitHub heuristic discovery and its confirmation prompt, the datreeio/CRDs-catalog fallback, settings ylsSchemaLoader.enableWebDiscovery and ylsSchemaLoader.githubRepoHints (users who had enableWebDiscovery=false to stay offline must now set enableFluxCatalog=false); bundled mapping pruned from 53 entries to 1; inserted schema URLs for previously bundled kinds now point at schemas.fluxoperator.dev (existing comments in users' files are not rewritten).
 7. Version: set 0.3.0 in package.json and in both root "version" fields of package-lock.json (`npm version 0.3.0 --no-git-tag-version` does both; do not create a git tag).
-8. Real-endpoint smoke (run by hand once, NOT committed, NOT part of npm test): after `npm run compile`, run a one-off node script that builds createFluxCatalog from out/src/lib/fluxCatalog.js with the real global fetch and an in-memory store, takes the 53 pairs from `git show main:src/lib/bundledMappingData.json`, and prints lookup() for each. Expected: 52 resolve to https://schemas.fluxoperator.dev/catalog/... URLs and only Kustomization kustomize.config.k8s.io/v1beta1 is undefined. Then `curl -s -o /dev/null -w "%{http_code}"` three of the returned URLs and expect 200. Paste the output in the delivery proof. If any of the 52 does not resolve, keep that entry in the bundled mapping and report it.
+8. Real-endpoint smoke (run by hand once, NOT committed, NOT part of npm test): after `npm run compile`, run a one-off node script that builds createFluxCatalog from the compiled fluxCatalog module in the out directory with the real global fetch and an in-memory store, takes the 53 pairs from `git show main:src/lib/bundledMappingData.json`, and prints lookup() for each. Expected: 52 resolve to https://schemas.fluxoperator.dev/catalog/... URLs and only Kustomization kustomize.config.k8s.io/v1beta1 is undefined. Then `curl -s -o /dev/null -w "%{http_code}"` three of the returned URLs and expect 200. Paste the output in the delivery proof. If any of the 52 does not resolve, keep that entry in the bundled mapping and report it.
 9. Delivery LEARNINGS must include this line for the orchestrator: "Vault decision 'Prefer First-Party Sources for Schema Lookups' is superseded: the Flux schema catalog (built from upstream CRDs at tagged releases) is now the primary source; aggregator-as-fallback ordering no longer applies. Update the vault decision note."
 
 KEY FILES:
@@ -88,6 +88,8 @@ CONSUMES:
 PRODUCES:
 - src/lib/bundledMappingData.json -> bundled mapping with exactly one entry (Kustomization, kustomize.config.k8s.io/v1beta1, https://json.schemastore.org/kustomization.json).
 - test/integration/resolutionChain.test.ts -> scripted end-to-end demo of the final chain.
+- test/fixtures/resolution-chain.yaml -> five-document demo fixture.
+- test/fixtures/resolution-chain-catalog-off.yaml -> same content for the catalog-disabled scenario.
 - README.md, CHANGELOG.md -> 0.3.0 documentation.
 - package.json, package-lock.json -> version 0.3.0.
 
