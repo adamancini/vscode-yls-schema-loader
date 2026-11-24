@@ -1,18 +1,20 @@
 ---
 id: VYSL-bhp3
 title: "Release 0.3.0 with the bundled mapping removed"
-status: in_progress
+status: closed
 priority: 1
 type: task
 labels: [capstone, delivered]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:30:01Z
 created_by: ada
-updated_at: 2026-11-24T17:32:25Z
-content_hash: "sha256:036881649644a03f89a46ac1ee320acc8402f1a7aa60449b3505d5148feaeba7"
+updated_at: 2026-11-24T17:33:24Z
+content_hash: "sha256:032acc2c099cf99632f18a9a02cd86c8b9166cf674a8ad342a18e96ee2d9c973"
 was_blocked_by: [VYSL-70kn, VYSL-aqw2]
 assignee: dev-VYSL-bhp3
 follows: [VYSL-70kn, VYSL-aqw2]
+closed_at: 2026-11-24T17:33:24Z
+close_reason: "Accepted via pvg story accept"
 ---
 
 ## Description
@@ -183,6 +185,7 @@ status: delivered
 - 2026-11-24T17:25:04Z auto-follows: linked to predecessor VYSL-aqw2
 - 2026-11-24T17:25:04Z claimed by dev-VYSL-bhp3
 - 2026-11-24T17:32:24Z status: in_progress -> in_progress
+- 2026-11-24T17:33:24Z status: in_progress -> closed
 
 ## Links
 - Parent: [[VYSL-gvc0]]
