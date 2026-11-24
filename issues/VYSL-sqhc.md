@@ -4,7 +4,7 @@ title: "Offer to restore a missing schema directive for yaml.schemas-associated 
 status: in_progress
 priority: 1
 type: task
-labels: [walking-skeleton]
+labels: [walking-skeleton, delivered]
 parent: VYSL-0jlx
 created_at: 2026-11-24T19:13:54Z
 created_by: ada
