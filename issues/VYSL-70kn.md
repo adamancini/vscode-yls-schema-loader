@@ -8,8 +8,8 @@ labels: [walking-skeleton, delivered]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
-updated_at: 2026-11-24T17:14:10Z
-content_hash: "sha256:08eed2f259429da4c551900509a1153fbc34cbe876e25718f235630c18c4740b"
+updated_at: 2026-11-24T17:14:11Z
+content_hash: "sha256:afddbca8c2cfe81b2752519f5e1112e0c2e9e51973acff1f6452c112ebb73b8c"
 blocks: [VYSL-aqw2, VYSL-bhp3]
 assignee: dev-VYSL-70kn
 ---
@@ -143,6 +143,16 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 
 ## Notes
+
+
+## nd_contract
+status: delivered
+
+### evidence
+- Transitioned via pvg story deliver on 2026-11-24.
+
+### proof
+- [ ] Developer evidence block must remain authoritative above this contract.
 
 
 ## History
