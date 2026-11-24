@@ -8,8 +8,8 @@ labels: [capstone, delivered]
 parent: VYSL-0jlx
 created_at: 2026-11-24T19:14:53Z
 created_by: ada
-updated_at: 2026-11-24T19:31:18Z
-content_hash: "sha256:7e7f7a834b9d4a47bc8cc0831cd381a31f7b62bc76159563a059d4259727c0bc"
+updated_at: 2026-11-24T19:31:41Z
+content_hash: "sha256:dc8ce081fc8a4df5b91a5b9fa223e5bf89ab9f6d046d9514568ff5e6605726eb"
 was_blocked_by: [VYSL-sqhc]
 assignee: dev-VYSL-uk3t
 follows: [VYSL-sqhc]
@@ -171,3 +171,49 @@ status: delivered
 - Follows: [[VYSL-sqhc]]
 
 ## Comments
+
+### 2026-11-24T19:31:40Z ada
+PROOF:
+Commits on story/VYSL-uk3t (pushed to origin): bfdf83e (tdd-red: fixtures + new autoInsert suite), b59afa7 (implementation, settings test + description, docs, version). Results below were produced at b59afa7.
+
+Commands (worktree .claude/worktrees/dev-VYSL-uk3t):
+- npm --prefix <wt> run compile -> exit 0
+- npm --prefix <wt> run lint -> exit 0, no findings
+- npx --prefix <wt> prettier --check (worktree; also scoped to src test README CHANGELOG package.json with the worktree .prettierignore) -> "All matched files use Prettier code style!"
+- rm -rf out dist && npm --prefix <wt> test -> exit 0: unit 78 passing, 0 failing; integration 64 passing, 0 failing, 0 pending
+- pvg verify (8 changed files) -> VERIFY: PASSED (0 issues)
+- pvg gates on changed src/test files -> PASS (0 warn); pvg gates src test/integration -> PASS (1 warn, pre-existing CCN 15 in untouched src/lib/fluxCatalog.ts parseCatalogIndex)
+- pvg settings verify.command -> empty (none declared)
+- No coverage tool configured; counts reported instead.
+
+Counts: baseline (b9651b4, = VYSL-sqhc delivered state) unit 81 / integration 56. After: unit 78 / integration 64.
+- Unit -3: isCovered lost its last importer (src/autoInsert.ts), so it and its 3 unit tests were deleted (equivalent cases remain in the coverageState suite).
+- Integration +8: new suite "autoInsertSchemas: restore the yaml.schemas directive on open". The settings test was renamed and re-pinned, not added.
+
+RED evidence (bfdf83e + settings test, before implementation): 5 failing -- description mismatch; comment-mode restore, three-doc restore and both-mode restore left the document untouched (actual line 0 = apiVersion); real-wiring test never saw the directive. The yamlSchemas/off/alias/regression tests passed at RED (they are guards for behavior that must stay).
+
+AC verification:
+| AC | Evidence |
+|1| test "comment mode, exact path: inserts the settings URL..." (line 0 = directive with settings URL); both-mode test; URL selection via coverageState/settingsSchemaUrl (VYSL-sqhc unit tests) |
+|2| test "three documents: restores above the first and third bottom-to-top..." asserts all 18 lines |
+|3| tests "yamlSchemas mode: ... untouched" and "autoInsert off: ... untouched" |
+|4| comment-mode test: counting catalog lookups = [], stub fetch requestedUrls = [], sessionCache.size = 0 although the fixture catalog knows Stage; both-mode test: yaml.schemas deep-equals its prior value |
+|5| real-wiring test: after deleting the inserted line, staysFalseFor(1000ms) that it reappears; src/extension.ts unchanged (git diff b9651b4..b59afa7 -- src/extension.ts is empty): autoInsert wired to onDidOpenTextDocument + activation scan only |
+|6| test "an alias-only mapping (kubernetes) causes no insertion" (with a catalog that knows the kind) |
+|7| real-wiring test goes through the activated extension's open handler (no direct call); regression test: unmapped file with yaml.schemas mapping another file gets CATALOG_STAGE_URL and session cache entry |
+|8| README: Features bullet "Restores a missing directive" (diagnostic + quick-fix texts, auto restore, mode gating, comment-only, no re-insert on edit), new section "Which yaml.schemas URL is restored" (URL-only keys, 3-step rule with 3/1/0 example, broad-pattern warning with **/*.yaml and *.yaml vs **/*.yaml), settings row, Never-edits-silently and Opt-in bullets updated, Known limitations last bullet replaced |
+|9| CHANGELOG ## 0.4.0 above 0.3.3 with behavior-change bullet; package.json + package-lock.json (top level and packages[""]) = 0.4.0 via npm version --no-git-tag-version; no tag, no vsce, no publish |
+|10| package.json description equals the story string; settings.test.ts pins it verbatim (same commit b59afa7) |
+|11| dedicated fixtures per mutating test (restore-auto, -multidoc, -both-mode, -yamlschemas-mode, -activated, -unmapped; -disabled shared only by the two never-mutating tests); suite setup disableActivatedFluxCatalog; createFixtureFluxCatalog; schemas.example.invalid URLs; teardown resets autoInsert, insertionMode, yaml.schemas, enableFluxCatalog |
+|12| gate results above |
+
+Wiring site: src/extension.ts handleDocumentOpen -> autoInsertSchemas (onDidOpenTextDocument and activation scan), exercised by the real-wiring test.
+
+Deviation: one extra fixture, test/fixtures/restore-auto-unmapped.yaml, for the regression test, because the isolation rule requires a dedicated fixture for every mutating test and the story's six fixtures were all assigned.
+
+LEARNINGS:
+- The literal 'comment' passed to applyResolution is what keeps yaml.schemas untouched in both mode; the restore branch never touches resolver, catalog or session cache.
+- A test that combines waitFor (up to 4s) with staysFalseFor exceeds mocha's 2s default timeout; use `async function () { this.timeout(...) }`.
+- Prettier run from outside a worktree resolves .prettierignore from the cwd; pass --ignore-path <wt>/.prettierignore for a faithful check.
+- Moving the settings test into the same commit as the description change meant splitting it out of the RED commit (reset --soft); plan commit grouping before the RED commit.
+- Test-host stderr shows DEP0169 url.parse deprecation from VS Code itself, not extension code.
