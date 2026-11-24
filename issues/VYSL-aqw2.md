@@ -8,13 +8,14 @@ parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
 updated_at: 2026-11-24T17:24:16Z
-content_hash: "sha256:6a3ba008447e0f37b467caad65c3ad03254125126055f235826280193d4e635d"
+content_hash: "sha256:eb710da550f7140b80145ec9721060aba4a3d0d566d8dca972b1084c9fecf2c5"
 was_blocked_by: [VYSL-70kn]
 assignee: dev-VYSL-aqw2
 follows: [VYSL-70kn]
 labels: [delivered, accepted]
 closed_at: 2026-11-24T17:24:15Z
 close_reason: "Accepted: GitHub heuristic and CRDs-catalog stages removed; chain is override, fluxCatalog, bundled, sessionCache, unresolved; proof SHA-matched, 82 unit + 25 integration pass"
+led_to: [VYSL-bhp3]
 ---
 
 ## Description
@@ -150,6 +151,7 @@ status: delivered
 - Parent: [[VYSL-gvc0]]
 - Was blocked by: [[VYSL-70kn]]
 - Follows: [[VYSL-70kn]]
+- Led to: [[VYSL-bhp3]]
 
 ## Comments
 

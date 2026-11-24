@@ -1,16 +1,18 @@
 ---
 id: VYSL-bhp3
 title: "Release 0.3.0 with the bundled mapping removed"
-status: open
+status: in_progress
 priority: 1
 type: task
 labels: [capstone]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:30:01Z
 created_by: ada
-updated_at: 2026-11-24T17:03:16Z
-content_hash: "sha256:40e6fe7651078e29cfb5c1c287e57a8a0c313b606776d4cfa79c60ad7fb6692b"
+updated_at: 2026-11-24T17:25:04Z
+content_hash: "sha256:037b3ae9a4b9ce36488b8fb9cb9215689d24447899b2f5b208c0dbb46dedae1b"
 was_blocked_by: [VYSL-70kn, VYSL-aqw2]
+assignee: dev-VYSL-bhp3
+follows: [VYSL-70kn, VYSL-aqw2]
 ---
 
 ## Description
@@ -166,9 +168,14 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 - 2026-11-24T16:30:01Z dep_added: blocked_by VYSL-aqw2
 - 2026-11-24T17:15:27Z dep_removed: was_blocked_by VYSL-70kn
 - 2026-11-24T17:24:16Z dep_removed: was_blocked_by VYSL-aqw2
+- 2026-11-24T17:25:04Z status: open -> in_progress
+- 2026-11-24T17:25:04Z auto-follows: linked to predecessor VYSL-70kn
+- 2026-11-24T17:25:04Z auto-follows: linked to predecessor VYSL-aqw2
+- 2026-11-24T17:25:04Z claimed by dev-VYSL-bhp3
 
 ## Links
 - Parent: [[VYSL-gvc0]]
 - Was blocked by: [[VYSL-70kn]], [[VYSL-aqw2]]
+- Follows: [[VYSL-70kn]], [[VYSL-aqw2]]
 
 ## Comments
