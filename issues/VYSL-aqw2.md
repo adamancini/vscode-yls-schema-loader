@@ -7,12 +7,13 @@ type: task
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
-updated_at: 2026-11-24T17:23:02Z
+updated_at: 2026-11-24T17:23:03Z
 content_hash: "sha256:5aad304656f4cf1fbf67dec81793757bc8d2b55c95418c850bfcaf0de204fea1"
 blocks: [VYSL-bhp3]
 was_blocked_by: [VYSL-70kn]
 assignee: dev-VYSL-aqw2
 follows: [VYSL-70kn]
+labels: [delivered]
 ---
 
 ## Description
