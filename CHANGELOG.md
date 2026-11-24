@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2
+
+- Copyedited the README, changelog and setting descriptions for clarity. No
+  code changes.
+
 ## 0.3.1
 
 - Marketplace listing: updated the description, added keywords and the
