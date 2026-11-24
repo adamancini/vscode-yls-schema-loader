@@ -9,8 +9,8 @@ parent: VYSL-0jlx
 created_at: 2026-11-24T19:14:53Z
 created_by: ada
 updated_at: 2026-11-24T19:15:24Z
-content_hash: "sha256:c5b644eaffda4dc6790b86162af5613417f8abeefee206c52b913ffc62febbd3"
-blocked_by: [VYSL-sqhc]
+content_hash: "sha256:8728267b5384dab7bda3af4f2e0ce108b6cadde27e423a35a136ba26e0e84e7a"
+was_blocked_by: [VYSL-sqhc]
 ---
 
 ## Description
@@ -147,9 +147,10 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 ## History
 - 2026-11-24T19:14:53Z dep_added: blocked_by VYSL-sqhc
+- 2026-11-24T19:25:08Z dep_removed: was_blocked_by VYSL-sqhc
 
 ## Links
 - Parent: [[VYSL-0jlx]]
-- Blocked by: [[VYSL-sqhc]]
+- Was blocked by: [[VYSL-sqhc]]
 
 ## Comments

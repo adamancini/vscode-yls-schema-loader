@@ -1,17 +1,18 @@
 ---
 id: VYSL-sqhc
 title: "Offer to restore a missing schema directive for yaml.schemas-associated files"
-status: in_progress
+status: closed
 priority: 1
 type: task
 labels: [walking-skeleton, delivered]
 parent: VYSL-0jlx
 created_at: 2026-11-24T19:13:54Z
 created_by: ada
-updated_at: 2026-11-24T19:24:13Z
-content_hash: "sha256:20950dda841d00c01dc97ddf1033ab498315015005f3ac8c545ca3713d66b941"
-blocks: [VYSL-uk3t]
+updated_at: 2026-11-24T19:25:08Z
+content_hash: "sha256:e042f2bd02ba262ccdd7b4c933475d7a2e902a260757c2074be8600bb99ee07d"
 assignee: dev-VYSL-sqhc
+closed_at: 2026-11-24T19:25:08Z
+close_reason: "Accepted via pvg story accept"
 ---
 
 ## Description
@@ -168,10 +169,11 @@ status: delivered
 - 2026-11-24T19:17:19Z status: open -> in_progress
 - 2026-11-24T19:17:19Z claimed by dev-VYSL-sqhc
 - 2026-11-24T19:24:13Z status: in_progress -> in_progress
+- 2026-11-24T19:25:08Z status: in_progress -> closed
+- 2026-11-24T19:25:08Z dep_removed: no_longer_blocks VYSL-uk3t
 
 ## Links
 - Parent: [[VYSL-0jlx]]
-- Blocks: [[VYSL-uk3t]]
 
 ## Comments
 
