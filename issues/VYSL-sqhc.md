@@ -9,7 +9,7 @@ parent: VYSL-0jlx
 created_at: 2026-11-24T19:13:54Z
 created_by: ada
 updated_at: 2026-11-24T19:24:13Z
-content_hash: "sha256:ee88235533246279c4dbd460480ec2b14a8109538d55c74fe0f0ce1fb0359ce5"
+content_hash: "sha256:3668a23281879ca6199ba822e7d9c22e1a75fa78df467ff35faa6a991ff17c44"
 blocks: [VYSL-uk3t]
 assignee: dev-VYSL-sqhc
 ---
@@ -174,3 +174,48 @@ status: delivered
 - Blocks: [[VYSL-uk3t]]
 
 ## Comments
+
+### 2026-11-24T19:24:13Z ada
+PROOF:
+Commit: 97bb604 on story/VYSL-sqhc (pushed to origin). Worktree: .claude/worktrees/dev-VYSL-sqhc.
+
+Commands (run from the worktree via npm --prefix, clean build):
+- npm run compile -> exit 0
+- npm run lint (eslint src test *.js) -> exit 0, no output
+- npx prettier --check (repo .gitignore + .prettierignore) -> All matched files use Prettier code style!
+- rm -rf out dist && npm test -> exit 0. Unit: 81 passing, 0 failing. Integration: 56 passing, 0 failing, 0 pending.
+- Baseline on main @ 6653720 (same clean procedure): unit 68 passing, integration 40 passing.
+- Delta: +13 unit (8 settingsSchemaUrl + 5 coverageState in src/lib/coverageCheck.test.ts; the 3 existing isCovered tests are unchanged), +16 integration (test/integration/restoreDirective.test.ts: 9 diagnostics, 5 quick-fix, 2 command).
+- pvg verify (6 changed source/test files, --include-tests) -> VERIFY: PASSED (0 issues); pvg verify --check-mocks -> PASSED (0 mock usages).
+- pvg gates <changed files> -> GATES: PASS (0 warn). (An unscoped pvg gates from the project root FAILS on duplication/file_loc because it scans the main checkout, the worktree copy and .vscode-test VS Code binaries together; none of the blocks are in this diff.)
+- pvg settings verify.command -> empty (no project verify workflow).
+- Coverage: no coverage tool is configured; counts reported instead.
+
+RED evidence: with behavior-preserving stubs (settingsSchemaUrl returns undefined, coverageState mirrors isCovered, constants exported), unit run gave 73 passing / 8 failing (all AssertionError on the expected URL/restorable state), integration gave 44 passing / 12 failing (all AssertionError: missing restore diagnostic, wrong action title/edit, command inserted the catalog URL). The 4 integration tests that passed on the stub are the negative/regression ones (constants, yamlSchemas mode, alias-only, unmapped).
+
+Wiring: diagnostics come from createDiagnosticsProvider().refresh (already called on open and debounced edit in src/extension.ts); the quick-fix comes from SchemaCodeActionProvider (already registered in extension.ts); the command path is createInsertSchemaCommandHandler (already registered). Integration tests drive those exact entry points in a real VS Code host with real workspace settings.
+
+AC table:
+1 restore diagnostic in comment/both, exact or glob, URL key -> 'comment mode, exact-path mapping', 'both mode', 'glob mapping', 'catch-all URL mapping' (asserts message, Information, source, code, start line) - PASS
+2 yamlSchemas mode no diagnostic -> 'yamlSchemas mode: no diagnostic' + unit 'settings match with writesComment false is covered' - PASS
+3 three-step URL rule, one unit test per step -> 'an exact path beats a glob regardless of key order', 'more literal leading directory segments win', 'equal specificity: lexically smaller pattern wins', 'same pattern under two URLs: lexically smaller URL wins' (+ leading slash/backslash, string/array, non-URL keys, no match); integration 'exact path and glob both match' - PASS
+4 QuickFix title, exact edit at (startLine,0), no command, Invoke + Automatic; no action when settings no longer match -> 'Invoke trigger...', 'Automatic trigger...', 'settings entry removed after the diagnostic was built' - PASS
+5 hover path: one directive, refreshed provider publishes nothing -> 'hover path: applying only the edit...' (restore-quickfix.yaml) - PASS
+6 command inserts settings URL, no catalog/prompt/session cache -> 'comment mode: inserts the settings URL without catalog, prompt or session cache' (fixture catalog knows Stage; zero lookups, zero fetches, prompt not called, cache size 0) - PASS
+7 yaml.schemas not written -> hover-path test deep-equals yaml.schemas before/after; 'both mode: inserts the comment and leaves yaml.schemas exactly as it was' - PASS
+8 no resolveSchema/catalog/network -> counting catalog zero lookups and zero requestedUrls on Invoke, Automatic and command; diagnostics refresh has no catalog dependency - PASS
+9 non-URL keys not restored -> 'alias-only mapping (kubernetes)' + unit non-URL key tests + coverageState 'only a non-URL key matching is covered' - PASS
+10 unmapped unchanged; multi-doc flags only the bare doc; catch-all flags -> 'unmapped file keeps the existing diagnostic with no code', 'multi-document file' (line 6 only), 'catch-all URL mapping', all 40 pre-existing integration tests pass - PASS
+11 isolation -> each mutating test has its own fixture (restore-quickfix, restore-command, restore-command-both-mode); every suite setup calls disableActivatedFluxCatalog; catalogs from createFixtureFluxCatalog; URLs on schemas.example.invalid; teardown resets yaml.schemas, insertionMode, enableFluxCatalog to undefined (.vscode/settings.json is {} after the run) - PASS
+12 gates green from clean build with counts -> see above - PASS
+
+Diff: 11 files. Production 4 files, ~137 changed lines (codeActionsProvider 32, diagnosticsProvider 17, insertSchemaCommand 20, coverageCheck 68). Tests 455 lines + 5 fixtures. package.json, README, CHANGELOG, autoInsert untouched.
+
+Host noise in test output (not extension code): DEP0169 url.parse and AgentHostCustomizationMarketplace receipts, as the story notes.
+
+LEARNINGS:
+- Behavior-preserving stubs (exports present, old logic) give a clean RED in TypeScript: the suite compiles and every new test fails on an assertion, while the negative/regression tests correctly pass on the stub, which shows they pin current behavior rather than the new feature.
+- coverageState must check the any-pattern match before the URL selection: a file matched only by an alias key has to stay covered, not fall to uncovered, or the alias user would suddenly get the old 'No schema' diagnostic.
+- provideCodeActions now filters undefined actions so a stale restore diagnostic yields nothing; the existing insert action path is untouched.
+- pvg gates must be scoped to changed paths (or run inside the worktree); from the project root it scans the main checkout, worktree copies and the downloaded VS Code under .vscode-test and fails on duplication that has nothing to do with the story.
+- npx prettier --check run with an explicit --ignore-path must also pass .gitignore, otherwise the gitignored test-written .vscode/settings.json gets flagged.
