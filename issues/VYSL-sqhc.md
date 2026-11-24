@@ -9,7 +9,7 @@ parent: VYSL-0jlx
 created_at: 2026-11-24T19:13:54Z
 created_by: ada
 updated_at: 2026-11-24T19:25:08Z
-content_hash: "sha256:e042f2bd02ba262ccdd7b4c933475d7a2e902a260757c2074be8600bb99ee07d"
+content_hash: "sha256:02ae85f5a72e796100f12d72f2d739e8240bff74973eb7569113e895ffdac58d"
 assignee: dev-VYSL-sqhc
 closed_at: 2026-11-24T19:25:08Z
 close_reason: "Accepted via pvg story accept"
@@ -153,6 +153,17 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 ## Notes
 COMPLETED: implemented and delivered at 97bb604 (unit 81, integration 56 passing). NEXT: PM review.
+
+
+## nd_contract
+status: accepted
+
+### evidence
+- PM closeout applied via pvg story accept on 2026-11-24.
+
+### proof
+- [x] Story closed after accepted label was applied.
+
 
 ## nd_contract
 status: delivered
