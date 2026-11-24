@@ -7,8 +7,8 @@ type: task
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
-updated_at: 2026-11-24T17:23:03Z
-content_hash: "sha256:5aad304656f4cf1fbf67dec81793757bc8d2b55c95418c850bfcaf0de204fea1"
+updated_at: 2026-11-24T17:23:04Z
+content_hash: "sha256:19af4fcac4e217a07f922fd6339959f1a9231f65e62417139ce2e1bfdf3cb8c3"
 blocks: [VYSL-bhp3]
 was_blocked_by: [VYSL-70kn]
 assignee: dev-VYSL-aqw2
@@ -122,6 +122,16 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 
 ## Notes
+
+
+## nd_contract
+status: delivered
+
+### evidence
+- Transitioned via pvg story deliver on 2026-11-24.
+
+### proof
+- [ ] Developer evidence block must remain authoritative above this contract.
 
 
 ## History
