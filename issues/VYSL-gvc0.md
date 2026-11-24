@@ -6,9 +6,9 @@ priority: 1
 type: epic
 created_at: 2026-11-24T16:26:35Z
 created_by: ada
-updated_at: 2026-11-24T18:05:15Z
+updated_at: 2026-11-24T18:05:18Z
 content_hash: "sha256:55f7a4c60ef7bb2a169dcd6f143f20af8f77e17473fbc45b5f8bcfd14b420f8a"
-labels: [milestone]
+labels: [milestone, accepted]
 closed_at: 2026-11-24T18:05:15Z
 close_reason: "All stories accepted, gate passed: full suite green, Anchor VALIDATED, merged to main 5ad4cd1"
 ---
