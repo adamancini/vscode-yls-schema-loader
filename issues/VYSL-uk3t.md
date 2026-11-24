@@ -4,7 +4,7 @@ title: "Auto-restore the missing schema directive on document open (v0.4.0)"
 status: closed
 priority: 1
 type: task
-labels: [capstone, delivered, accepted]
+labels: [capstone, accepted]
 parent: VYSL-0jlx
 created_at: 2026-11-24T19:14:53Z
 created_by: ada
