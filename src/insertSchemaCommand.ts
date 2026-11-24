@@ -3,7 +3,6 @@ import { DiagnosticsProvider } from './diagnosticsProvider';
 import { parseKindApiVersions } from './lib/yamlDocParser';
 import { resolveSchema, sessionCacheKey, ResolverDeps, DIRECT_APPLY_SOURCES } from './lib/resolver';
 import { FluxCatalog } from './lib/fluxCatalog';
-import bundledMappingData from './lib/bundledMappingData.json';
 import { applyResolution } from './applySchema';
 import { getInsertionMode, getAdditionalMappings } from './settings';
 
@@ -36,7 +35,6 @@ export function createInsertSchemaCommandHandler(
     const deps: ResolverDeps = {
       overrideEntries: getAdditionalMappings(),
       lookupFluxCatalog: (kind, apiVersion) => fluxCatalog.lookup(kind, apiVersion),
-      bundledEntries: bundledMappingData,
       sessionCache,
     };
     const insertionMode = getInsertionMode();

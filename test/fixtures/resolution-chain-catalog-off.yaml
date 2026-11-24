@@ -1,0 +1,24 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: resolution-chain-catalog-off-warehouse
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: resolution-chain-catalog-off-stage
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resolution-chain-catalog-off-configmap
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+---
+apiVersion: widgets.example.com/v1
+kind: Widget
+metadata:
+  name: resolution-chain-catalog-off-widget

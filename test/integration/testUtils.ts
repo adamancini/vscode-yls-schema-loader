@@ -63,6 +63,29 @@ export async function restoreFluxCatalogSetting(): Promise<void> {
     .update('enableFluxCatalog', undefined, vscode.ConfigurationTarget.Workspace);
 }
 
+/**
+ * Map the Kargo Stage fixtures (kargo.akuity.io/v1alpha1 Stage) to `url` through a
+ * workspace-scoped ylsSchemaLoader.additionalMappings entry. Pair with clearAdditionalMappings
+ * in teardown.
+ */
+export async function setStageOverride(url: string): Promise<void> {
+  await setAdditionalMappings([{ kind: 'Stage', apiVersion: 'kargo.akuity.io/v1alpha1', url }]);
+}
+
+export async function setAdditionalMappings(
+  entries: { kind: string; apiVersion: string; url: string }[]
+): Promise<void> {
+  await vscode.workspace
+    .getConfiguration('ylsSchemaLoader')
+    .update('additionalMappings', entries, vscode.ConfigurationTarget.Workspace);
+}
+
+export async function clearAdditionalMappings(): Promise<void> {
+  await vscode.workspace
+    .getConfiguration('ylsSchemaLoader')
+    .update('additionalMappings', undefined, vscode.ConfigurationTarget.Workspace);
+}
+
 const FLUX_CATALOG_FIXTURE = path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'flux-catalog-index.json');
 
 /**

@@ -2,7 +2,7 @@
   "name": "yls-schema-loader",
   "displayName": "YLS Schema Loader",
   "description": "Discovers yaml-language-server schemas for Kubernetes-style YAML documents and helps wire them up.",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "publisher": "adamancini",
   "license": "MIT",
   "repository": {
@@ -56,7 +56,7 @@
         "ylsSchemaLoader.additionalMappings": {
           "type": "array",
           "default": [],
-          "description": "User/workspace overrides merged on top of the bundled kind/apiVersion to schema URL mapping.",
+          "description": "Your own kind/apiVersion to schema URL mappings. Checked first, before the Flux schema catalog; use it for kinds the catalog does not cover or to pin a different schema.",
           "items": {
             "type": "object",
             "required": [

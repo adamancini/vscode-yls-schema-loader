@@ -15,83 +15,61 @@ extension automates the lookup.
 
 - **Detects** `kind`/`apiVersion` in open YAML documents (including
   multi-document files) and checks whether a schema is already associated.
-- **Resolves** a schema through four stages, first match wins:
-  1. A bundled, curated mapping of common kinds (see below).
-  2. An in-session cache of resolutions already made this window.
-  3. A GitHub heuristic: guesses the source repo from the `apiVersion` group,
-     probes common schema file paths, and falls back to a GitHub code search.
-  4. A [datreeio/CRDs-catalog](https://github.com/datreeio/CRDs-catalog) lookup,
-     tried only when step 3 finds no source-code repo (or none with a schema)
-     and wasn't rate-limited — a single conventional URL, verified to exist
-     before it's used.
+- **Resolves** a schema through this chain, first match wins:
+  1. Your own `ylsSchemaLoader.additionalMappings`.
+  2. The [Flux schema catalog](https://schemas.fluxoperator.dev/catalog/)
+     (see [Schema sources](#schema-sources)).
+  3. An in-session cache of resolutions already made this window.
+
+  Every resolved source applies directly. A document nothing resolves stays
+  unresolved: the quick-fix asks you for a URL.
+
 - **Never edits silently.** An uncovered document gets an info diagnostic and
-  a quick-fix — nothing is written until you act on it. A schema found via
-  GitHub always shows you the candidate (or a picker, if there's more than
-  one) and requires explicit confirmation before anything is inserted.
-  Bundled-mapping and CRDs-catalog matches apply directly — both are already
-  verified before being offered, so there's nothing ambiguous to confirm.
+  a quick-fix — nothing is written until you act on it, unless you turn on
+  auto-insert.
 - **Two ways to apply a fix:** the quick-fix on the diagnostic, or the
   command palette — _YLS Schema Loader: Insert Schema for Current Document_
   — which resolves whichever document your cursor is in.
 - **Opt-in auto-insert** (`ylsSchemaLoader.autoInsert`, off by default): when
-  a document is opened and resolves through one of the three direct-apply
-  sources above (bundled mapping, session cache, or CRDs-catalog), insert it
-  immediately — no diagnostic, no quick-fix, nothing to click. Runs on
-  document open only, not on every keystroke, so it can't turn typing into
-  a stream of network lookups. GitHub candidates still always require
-  manual confirmation, even with this on.
+  a document is opened and resolves through any source above, insert the
+  schema immediately — no diagnostic, no quick-fix, nothing to click. Runs on
+  document open only, not on every keystroke.
 
-## Bundled schemas
+## Schema sources
 
-53 kind/apiVersion pairs across the following ecosystems, grouped by
-project:
+The extension ships no embedded schemas. Every schema is a lookup:
 
-- **Kargo** (`kargo.akuity.io/v1alpha1`) — all resource kinds: `Stage`,
-  `Warehouse`, `Promotion`, `ClusterConfig`, `ClusterPromotionTask`,
-  `Freight`, `Project`, `ProjectConfig`, `PromotionRequest`,
-  `PromotionTask`, `Target`.
-- **ArgoCD ecosystem** (`argoproj.io/v1alpha1`) — Argo CD (`Application`,
-  `AppProject`, `ApplicationSet`), Argo Rollouts (`Rollout`,
-  `AnalysisTemplate`, `ClusterAnalysisTemplate`, `AnalysisRun`,
-  `Experiment`), Argo Workflows (`Workflow`, `WorkflowTemplate`,
-  `ClusterWorkflowTemplate`, `CronWorkflow`), and Argo Events (`EventBus`,
-  `EventSource`, `Sensor`).
-- **Flux** — `GitRepository`, `HelmRepository`, `OCIRepository`, `Bucket`
-  (`source.toolkit.fluxcd.io/v1`), `Kustomization`
-  (`kustomize.toolkit.fluxcd.io/v1`), `HelmRelease`
-  (`helm.toolkit.fluxcd.io/v2`), `ImageRepository`, `ImagePolicy`,
-  `ImageUpdateAutomation` (`image.toolkit.fluxcd.io/v1`), `Alert`, `Provider`
-  (`notification.toolkit.fluxcd.io/v1beta3`), `Receiver`
-  (`notification.toolkit.fluxcd.io/v1`) — schemas sourced from the
-  Flux-community-maintained [flux2-schemas](https://github.com/fluxcd-community/flux2-schemas).
-- **Istio** — `VirtualService`, `Gateway`, `DestinationRule`,
-  `ServiceEntry`, `Sidecar` (`networking.istio.io/v1`), plus
-  `PeerAuthentication`, `AuthorizationPolicy`, `RequestAuthentication`
-  (`security.istio.io/v1`).
-- **Cilium** (`cilium.io/v2`) — `CiliumNetworkPolicy`,
-  `CiliumClusterwideNetworkPolicy`.
-- **cert-manager** (`cert-manager.io/v1`) — `Certificate`,
-  `ClusterIssuer`, `Issuer`.
-- **Kustomize** (`kustomize.config.k8s.io/v1beta1`) — the native
-  `kubectl kustomize` / `kustomize` CLI's own `kustomization.yaml`
-  `Kustomization` kind, distinct from Flux's `kustomize.toolkit.fluxcd.io`
-  `Kustomization` CRD above. Kustomize doesn't publish its own JSON schema,
-  so this uses the community-maintained
-  [SchemaStore](https://www.schemastore.org/kustomization.json) entry.
-- **External Secrets Operator** (`external-secrets.io/v1`) — `ExternalSecret`.
+- The [Flux schema catalog](https://schemas.fluxoperator.dev/catalog/) is
+  built from upstream projects' CRDs at tagged releases and covers core
+  Kubernetes and 120+ projects. Its index,
+  `https://schemas.fluxoperator.dev/index.json`, is downloaded at most once
+  every 24 hours, cached in VS Code global state, and reused when you are
+  offline. Lookups never happen while you type.
+- Kinds the catalog lacks are unresolved (the quick-fix asks for a URL) until
+  you map them with `ylsSchemaLoader.additionalMappings`.
 
-Anything else falls through to GitHub discovery, or you can extend the
-mapping yourself with `ylsSchemaLoader.additionalMappings`.
+### Kinds the catalog does not cover
+
+The native `kubectl kustomize` / `kustomize` CLI `kustomization.yaml` kind
+(`Kustomization` at `kustomize.config.k8s.io/v1beta1`) is not in the
+catalog. It is distinct from Flux's `kustomize.toolkit.fluxcd.io`
+`Kustomization`, which the catalog does cover. To map it, add this to your
+settings:
+
+```json
+"ylsSchemaLoader.additionalMappings": [
+  { "kind": "Kustomization", "apiVersion": "kustomize.config.k8s.io/v1beta1", "url": "https://json.schemastore.org/kustomization.json" }
+]
+```
 
 ## Extension Settings
 
-| Setting                              | Type                                   | Default     | Description                                                                                      |
-| ------------------------------------ | -------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
-| `ylsSchemaLoader.insertionMode`      | `"comment" \| "yamlSchemas" \| "both"` | `"comment"` | What a resolved schema writes: an inline comment, a `yaml.schemas` entry, or both.               |
-| `ylsSchemaLoader.enableWebDiscovery` | `boolean`                              | `true`      | Whether to search GitHub when no bundled mapping or cached resolution exists.                    |
-| `ylsSchemaLoader.autoInsert`         | `boolean`                              | `false`     | Auto-insert direct-apply resolutions (bundled/session-cache/CRDs-catalog) with no prompt.        |
-| `ylsSchemaLoader.additionalMappings` | `{ kind, apiVersion, url }[]`          | `[]`        | Your own overrides, merged on top of the bundled mapping.                                        |
-| `ylsSchemaLoader.githubRepoHints`    | `{ group, repo }[]`                    | `[]`        | Explicit `apiVersion` group → `org/repo` overrides, for when the GitHub heuristic guesses wrong. |
+| Setting                              | Type                                   | Default     | Description                                                                                                                             |
+| ------------------------------------ | -------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `ylsSchemaLoader.insertionMode`      | `"comment" \| "yamlSchemas" \| "both"` | `"comment"` | What a resolved schema writes: an inline comment, a `yaml.schemas` entry, or both.                                                      |
+| `ylsSchemaLoader.enableFluxCatalog`  | `boolean`                              | `true`      | Resolve schemas from the Flux schema catalog. Turn off in air-gapped environments to prevent any request to schemas.fluxoperator.dev.   |
+| `ylsSchemaLoader.autoInsert`         | `boolean`                              | `false`     | Auto-insert any resolved schema (your additionalMappings, the Flux schema catalog, the session cache) on document open, with no prompt. |
+| `ylsSchemaLoader.additionalMappings` | `{ kind, apiVersion, url }[]`          | `[]`        | Your own kind/apiVersion to schema URL mappings, checked first, before the Flux schema catalog.                                         |
 
 ## Requirements
 
@@ -104,14 +82,12 @@ mapping yourself with `ylsSchemaLoader.additionalMappings`.
 
 ## Known limitations
 
-- No live-cluster CRD introspection — schemas come from the bundled mapping,
-  your own overrides, or GitHub, not `kubectl get crd`.
+- No live-cluster CRD introspection — schemas come from your
+  additionalMappings or the Flux schema catalog, not `kubectl get crd`.
+- With `ylsSchemaLoader.enableFluxCatalog` off, only your additionalMappings
+  resolve (plus URLs you already entered this session).
 - Only acts on documents with **no** existing schema association; it doesn't
   detect or offer to replace a stale one.
-- GitHub discovery is a best-effort heuristic (a handful of conventional file
-  paths, then a code search) — it won't find every schema in every repo
-  layout. `ylsSchemaLoader.githubRepoHints` and `additionalMappings` are the
-  escape hatches.
 
 ## Development
 
