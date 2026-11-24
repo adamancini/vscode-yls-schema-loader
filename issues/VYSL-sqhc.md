@@ -8,8 +8,8 @@ labels: [walking-skeleton]
 parent: VYSL-0jlx
 created_at: 2026-11-24T19:13:54Z
 created_by: ada
-updated_at: 2026-11-24T19:15:04Z
-content_hash: "sha256:841384b84a78be787bcfbd9f88b66514c50a264ae3d0e41f9815f0a12a4fbd0a"
+updated_at: 2026-11-24T19:15:23Z
+content_hash: "sha256:c032ea6b6bc4b88865407d685f34d95147efec93896f708acafe1457d1a30e04"
 blocks: [VYSL-uk3t]
 ---
 
@@ -79,7 +79,11 @@ PRODUCES:
 - src/codeActionsProvider.ts -> edit-only QuickFix `Restore yaml-language-server schema directive` for restore diagnostics.
 - src/insertSchemaCommand.ts -> the insert command restores a restorable document with the settings URL, comment only.
 - test/integration/restoreDirective.test.ts -> integration suite for the offer path.
-- test/fixtures/restore-diagnostic.yaml, test/fixtures/restore-diagnostic-multidoc.yaml, test/fixtures/restore-quickfix.yaml, test/fixtures/restore-command.yaml, test/fixtures/restore-command-both-mode.yaml -> fixtures (Kargo Stage documents; the multidoc one holds two documents, the first with an inline directive and the second without).
+- test/fixtures/restore-diagnostic.yaml -> fixture, one Kargo Stage document without a directive (read-only tests)
+- test/fixtures/restore-diagnostic-multidoc.yaml -> fixture, two documents, the first with an inline directive and the second without (read-only tests)
+- test/fixtures/restore-quickfix.yaml -> fixture, one Kargo Stage document, mutated by the hover-path test only
+- test/fixtures/restore-command.yaml -> fixture, one Kargo Stage document, mutated by the comment-mode command test only
+- test/fixtures/restore-command-both-mode.yaml -> fixture, one Kargo Stage document, mutated by the both-mode command test only
 
 TESTING:
 Default coverage: unit + integration, test first (RED before GREEN; confirm each RED fails for the intended reason on a fresh fixture, not merely that it fails). No mocks in integration tests: real VS Code host, real documents, real workspace settings.
@@ -88,9 +92,9 @@ Unit (src/lib/coverageCheck.test.ts), one test per line:
 - glob specificity: `apps/team-ada/kargo/*.yaml` beats `apps/**/*.yaml`, which beats `**/*.yaml`, for `apps/team-ada/kargo/stage.yaml`
 - equal specificity: lexically smaller pattern wins (for example `apps/*.yaml` vs `apps/*.{yaml,yml}`)
 - same pattern under two URLs: lexically smaller URL wins
-- a leading-slash pattern (`/manifests/stage.yaml`) counts as exact for `manifests/stage.yaml`; backslash paths normalize
+- a pattern written with a leading slash counts as exact for the same relative path without it; backslash-separated paths normalize
 - value given as a single string and as an array both work
-- non-URL keys (`kubernetes`, `schemas/local.json`) are never returned; with a URL key and an alias both matching, the URL key is returned
+- non-URL keys (the alias `kubernetes`, a relative schema file path) are never returned; with a URL key and an alias both matching, the URL key is returned
 - nothing matches -> undefined
 - `coverageState`: inline comment -> covered (even when settings match); settings match + writesComment true -> restorable with the URL; settings match + writesComment false -> covered; only a non-URL key matches -> covered; no match -> uncovered
 - existing `isCovered` tests still pass unchanged
@@ -126,7 +130,7 @@ Acceptance Criteria:
 1. [State] While `ylsSchemaLoader.insertionMode` is `comment` or `both`, a recognized document with no inline directive whose file matches a `yaml.schemas` pattern (exact relative path or glob) under an `http://`, `https://` or `file:` key has an Information diagnostic with source `ylsSchemaLoader`, code `restoreDirective` and the exact message "Schema is associated via yaml.schemas but the inline directive is missing."
 2. [State] While `ylsSchemaLoader.insertionMode` is `yamlSchemas`, the same document has no diagnostic (today's behavior).
 3. [Ubiquitous] The settings URL is chosen by the three-step rule: exact path beats any glob; among globs the higher count of literal leading directory segments wins; then the lexically smallest pattern, then the lexically smallest URL. Each step has its own unit test.
-4. [Event] When code actions are requested for a restore diagnostic (Invoke or Automatic), the provider returns a QuickFix titled "Restore yaml-language-server schema directive" whose edit inserts exactly `# yaml-language-server: $schema=<settings URL>` plus a newline at the document's start line, with no command.
+4. [Event] When code actions are requested for a restore diagnostic (Invoke or Automatic), the provider returns a QuickFix titled "Restore yaml-language-server schema directive" whose edit inserts exactly `# yaml-language-server: $schema=<settings URL>` plus a newline at the document's start line, with no command. Error handling: if no settings entry matches any more when actions are requested, no action is returned and nothing throws.
 5. [Event] When only that edit is applied (the hover path), the file holds exactly one directive above the right document and a diagnostics refresh publishes nothing for it.
 6. [Event] When the insert command runs on a restorable document, it inserts the settings URL as a comment and does not consult the catalog, prompt, or write the session cache.
 7. [Unwanted] The restore shall not write `yaml.schemas`, even in `both` mode: the setting deep-equals its prior value after the quick-fix edit and after the command.
