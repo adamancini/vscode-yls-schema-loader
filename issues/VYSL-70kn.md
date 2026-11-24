@@ -8,8 +8,8 @@ labels: [walking-skeleton, delivered]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
-updated_at: 2026-11-24T17:14:11Z
-content_hash: "sha256:afddbca8c2cfe81b2752519f5e1112e0c2e9e51973acff1f6452c112ebb73b8c"
+updated_at: 2026-11-24T17:14:12Z
+content_hash: "sha256:7cf7ed7df36112b68df5711ee5050aa6700673cd9f3d893a4ad12529e61eefd3"
 blocks: [VYSL-aqw2, VYSL-bhp3]
 assignee: dev-VYSL-70kn
 ---
@@ -167,3 +167,61 @@ status: delivered
 - Blocks: [[VYSL-aqw2]], [[VYSL-bhp3]]
 
 ## Comments
+
+### 2026-11-24T17:14:12Z ada
+PROOF:
+Commit: 399f591 on story/VYSL-70kn (pushed to origin). All results below are from that SHA, in the story worktree.
+
+Commands and results:
+- `npm run compile` (tsc -p ./): exit 0, no errors.
+- `npm run lint` (eslint src test *.js): exit 0, 0 errors, 0 warnings.
+- `npx prettier --check <all files changed vs ae44f94>`: "All matched files use Prettier code style!"
+- `npm test` (pretest compile + esbuild bundle, then unit, then integration): EXIT=0
+  - Unit (mocha out/src/lib/**/*.test.js): 110 passing, 0 failing, 0 pending (was 75 before; +29 fluxCatalog, +8 resolver, -2 mergeMappings).
+  - Integration (@vscode/test-cli, real VS Code 1.147.0 host with redhat.vscode-yaml): 37 passing, 0 failing, 0 pending. New: "insertSchema command: fluxCatalog branch" (1), "autoInsertSchemas: Flux schema catalog" (3), settings enableFluxCatalog (2).
+- Mutation check (TDD red proof for behavior, reverted afterwards): disabling the catalog stage in resolveSchema and removing the retry back-off in fluxCatalog -> unit run 105 passing / 5 failing; restored -> 110 passing.
+- `pvg verify <18 changed files>`: 1 issue: src/lib/bundledMapping.ts thin_file (8 LOC). Expected: the story mandates deleting mergeMappings from it, leaving only MappingEntry + resolveBundled; the final epic story deletes this file entirely. Not padded.
+- Coverage %: not measured. The project has no coverage tool; installing c8 on the fly was blocked by the session permission policy. Every public function in src/lib/fluxCatalog.ts and every branch named in TESTING has a dedicated unit test (list below).
+- No test touches the real network: unit tests inject fetchFn + in-memory store; integration tests use createFixtureFluxCatalog (stub fetch serving test/fixtures/flux-catalog-index.json) and switch the activated extension's real catalog off via ylsSchemaLoader.enableFluxCatalog=false (Workspace) in setup of every suite that opens YAML or runs a command, restoring it in teardown. Auto-insert integration tests now open their document BEFORE turning autoInsert on, so the activated extension's open handler never resolves (and never hits GitHub/CRDs-catalog over the network) on its own.
+
+AC8 evidence: event subscriptions in src/extension.ts (activate):
+```
+  const debouncedDiagnosticsRefresh = debouncePerKey(
+    (doc: vscode.TextDocument) => diagnostics.refresh(doc),
+    DIAGNOSTICS_DEBOUNCE_MS,
+    (doc: vscode.TextDocument) => doc.uri.toString()
+  );
+
+  context.subscriptions.push(diagnostics.collection);
+  context.subscriptions.push(vscode.workspace.onDidOpenTextDocument((doc) => void handleDocumentOpen(doc)));
+  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => debouncedDiagnosticsRefresh(e.document)));
+  vscode.workspace.textDocuments.forEach((doc) => void handleDocumentOpen(doc));
+```
+The per-edit handler calls diagnostics.refresh only; diagnosticsProvider.ts imports only yamlDocParser, coverageCheck and settings.getYamlSchemas (no resolver, no catalog, no fetch). The catalog is reached only via handleDocumentOpen -> autoInsertSchemas(doc, sessionCache, fluxCatalog) and the registered INSERT_SCHEMA_COMMAND handler. The comment above handleDocumentOpen now names the Flux schema catalog index fetch as network access kept off the per-edit path.
+
+Wiring: src/extension.ts activate() builds ONE createFluxCatalog({ fetchFn: global fetch, isEnabled: getEnableFluxCatalog, store over context.globalState key 'fluxCatalog.index' }) and passes it to autoInsertSchemas (document open + activation scan) and createInsertSchemaCommandHandler (registered INSERT_SCHEMA_COMMAND, used by the quick-fix and by Insert Schema for Current Document). No fetch at activation; loading is lazy on first lookup.
+
+AC verification:
+| AC | Evidence |
+|---|---|
+| 1 quick-fix inserts catalog URL, no prompt, session cache | integration "insertSchema command: fluxCatalog branch": line 0 == `# yaml-language-server: $schema=https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json`, confirmCandidate and promptManualUrl never called, sessionCache['kargo.akuity.io/v1alpha1::Stage'] set; DIRECT_APPLY_SOURCES includes fluxCatalog |
+| 2 order override > catalog > bundled > session cache | resolver.test.ts suite "resolveSchema source order": override beats catalog; catalog beats bundled; bundled used when catalog undefined; bundled beats session cache; catalog beats session cache; lookupFluxCatalog not called on override hit |
+| 3 v1 -> core, lowercase kind | fluxCatalogUrl tests: ConfigMap v1 -> .../core/configmap_v1.json; ApplicationSet -> applicationset |
+| 4 fetch once when missing/older than 24h, store projection + fetchedAt under 'fluxCatalog.index', concurrent share | lookup tests: first call fetches FLUX_CATALOG_INDEX_URL once and stores {fetchedAt, index}; 10 concurrent -> 1 fetch; stored copy older than TTL -> 1 fetch + store rewritten; extension.ts store key 'fluxCatalog.index' |
+| 5 fresh copy -> zero requests incl. restart | "a fresh stored copy (e.g. after a restart) is used with zero fetches" (new catalog instance reading store) |
+| 6 offline -> stale copy; no copy -> nothing, falls to bundled, no error | stale+reject and stale+500 resolve from stale; no copy + reject -> undefined, no rejection; resolver test bundled-when-catalog-undefined; lookup() wraps everything in try/catch |
+| 7 <=1 attempt per 5 min after failure | "after a failure, no refetch inside FLUX_CATALOG_RETRY_MS (5 lookups), and one refetch after it"; unparseable body counted as failure |
+| 8 no catalog/fetch on onDidChangeTextDocument | quoted subscriptions above |
+| 9 setting false -> no request, no store read; default true; declared | "isEnabled false -> zero fetches and zero store reads"; integration "with the catalog disabled, the same Stage resolves through the bundled entry and nothing is fetched"; settings tests default true + override; package.json ylsSchemaLoader.enableFluxCatalog (boolean, default true, story text) |
+| 10 auto-insert applies catalog URL, multi-doc bottom-to-top | integration "applies a catalog match automatically..." and "applies catalog matches in a two-document file bottom-to-top with both lines correct" (Stage + Warehouse catalog URLs, one shared index fetch) |
+| 11 no URL for unlisted pairs; no real network | fluxCatalogUrl: unknown group / unknown kind / unlisted version / kustomize.config.k8s.io/v1beta1 Kustomization -> undefined; lookup returns undefined for unlisted pairs; network isolation described above |
+| 12 compile, lint, test green | outputs above |
+
+Diff: 23 files, +1040/-93 vs ae44f94 (over the ~650 LOC budget; most of the excess is tests: fluxCatalog.test.ts ~390 lines, resolver tests +116, prettier-expanded fixture JSON 83 lines).
+
+LEARNINGS:
+- The real index shape matched the story; the fixture is the four verbatim entries plus v/generatedAt/categories (prettier reformats the JSON across lines, content is identical).
+- The activated extension in the test host races with tests: with autoInsert=true set BEFORE openTextDocument, the extension's own open handler resolves the document first (previously via real GitHub/CRDs-catalog network calls for the widgets fixtures). Opening the document first and then enabling autoInsert avoids it, because autoInsertSchemas checks the setting synchronously before its first await.
+- Object.hasOwn in fluxCatalogUrl guards against kinds/groups like "constructor" resolving through the prototype chain of the parsed index.
+- pvg verify flags bundledMapping.ts as thin after mergeMappings removal; expected until the final story deletes the file.
+- pvg verify no longer accepts --format=text (the developer prompt still documents it).
