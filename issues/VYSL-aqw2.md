@@ -8,7 +8,8 @@ parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
 updated_at: 2026-11-24T16:28:45Z
-content_hash: "sha256:e473f7d6abbeb16a95e09b9756788d08e28d827758893cede54ec24e12c10410"
+content_hash: "sha256:7e87d9a264f10e436e6eafd850d6059db4ecc7447279cc0e9b38fd13378dd39f"
+blocked_by: [VYSL-70kn]
 ---
 
 ## Description
@@ -120,9 +121,10 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 
 ## History
-
+- 2026-11-24T16:28:46Z dep_added: blocked_by VYSL-70kn
 
 ## Links
 - Parent: [[VYSL-gvc0]]
+- Blocked by: [[VYSL-70kn]]
 
 ## Comments

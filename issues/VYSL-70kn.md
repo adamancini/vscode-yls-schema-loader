@@ -9,7 +9,8 @@ parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
 updated_at: 2026-11-24T16:27:51Z
-content_hash: "sha256:6d0b0d0ac8726ee79dc600c8d52db236e50f9f309dbabc62dca7c59834620081"
+content_hash: "sha256:383b5515a204be8b7c2e64e0a613cf9e54f2b993d587a936f1f80597beef3ad9"
+blocks: [VYSL-aqw2]
 ---
 
 ## Description
@@ -142,9 +143,10 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 
 ## History
-
+- 2026-11-24T16:28:46Z dep_added: blocks VYSL-aqw2
 
 ## Links
 - Parent: [[VYSL-gvc0]]
+- Blocks: [[VYSL-aqw2]]
 
 ## Comments
