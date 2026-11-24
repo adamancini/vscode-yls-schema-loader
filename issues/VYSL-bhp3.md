@@ -8,8 +8,8 @@ labels: [capstone, delivered]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:30:01Z
 created_by: ada
-updated_at: 2026-11-24T17:32:24Z
-content_hash: "sha256:f90afc89219c4fa806583b25f45e596295b5b06c0b1c512c270edc3b3ffc9813"
+updated_at: 2026-11-24T17:32:25Z
+content_hash: "sha256:036881649644a03f89a46ac1ee320acc8402f1a7aa60449b3505d5148feaeba7"
 was_blocked_by: [VYSL-70kn, VYSL-aqw2]
 assignee: dev-VYSL-bhp3
 follows: [VYSL-70kn, VYSL-aqw2]
@@ -190,3 +190,63 @@ status: delivered
 - Follows: [[VYSL-70kn]], [[VYSL-aqw2]]
 
 ## Comments
+
+### 2026-11-24T17:32:25Z ada
+PROOF:
+Branch story/VYSL-bhp3, commits 16baebd (implementation) + da52251 (test URL tweak), pushed to origin. Results below are from HEAD da522516b218a69a1764656a9e87b43729c8ab19. No git tag created (`git tag --points-at HEAD` returns nothing).
+
+Commands (worktree, run synchronously):
+- npm run compile -> exit 0
+- npm run lint -> exit 0, no output
+- npm run format:check -> "All matched files use Prettier code style!"
+- npm test (pretest compile+bundle, unit, VS Code integration) -> exit 0; unit 68 passing, 0 failing; integration 29 passing, 0 failing, 0 pending
+- npm run vscode:prepublish -> exit 0
+- pvg verify <11 changed ts files> --include-tests -> VERIFY: PASSED (11 files scanned, 0 issues)
+- pvg verify test/integration --check-mocks --include-tests -> MOCK CHECK: PASSED (9 files, 0 mock usages)
+- pvg settings verify.command -> empty (the project declares none)
+- Coverage: the project has no coverage tooling (no nyc/c8), so there is no percentage to report.
+
+TDD: tests written first. Compile RED: resolver.test.ts failed on missing resolveOverride/MappingEntry exports and on bundledEntries in ResolverDeps. Behavioral RED against the still-bundled code: 4 integration tests failing (demo A and B, where the bundled Kustomization got a schemastore comment; catalog-off autoInsert, where the bundled Stage was inserted; manual-path handler, where the bundled Stage was inserted without a prompt). All green after the bundled stage was removed.
+
+Removal check:
+$ rg -n -i "bundledMapping|bundled mapping|bundled schemas|resolveBundled|github heuristic|githubRepoHints|enableWebDiscovery|CRDs-catalog|datreeio|schemastore" src test package.json
+test/integration/resolutionChain.test.ts:24:const KUSTOMIZE_OVERRIDE_URL = 'https://json.schemastore.org/kustomization.json';
+(only the scenario C override URL; nothing in src or package.json)
+$ rg -n -i "bundled mapping|bundled schemas|github heuristic|githubRepoHints|enableWebDiscovery|CRDs-catalog|datreeio" README.md
+(no matches, exit 1)
+$ rg -c "schemastore|githubusercontent" dist/extension.js -> no matches. The only https URLs left in package.json are the repo's own repository/bugs/homepage metadata plus the catalog link in the enableFluxCatalog description.
+
+Real-endpoint smoke (manual, not committed): a node script built createFluxCatalog from out/src/lib/fluxCatalog.js with the real global fetch and an in-memory store, then looked up the 53 pairs from `git show main:src/lib/bundledMappingData.json`:
+TOTAL 53, resolved 52, unresolved: ["kustomize.config.k8s.io/v1beta1 Kustomization"]
+(all 52 resolved URLs start with https://schemas.fluxoperator.dev/catalog/)
+curl -s -o /dev/null -w "%{http_code}":
+200 https://schemas.fluxoperator.dev/catalog/kargo.akuity.io/stage_v1alpha1.json
+200 https://schemas.fluxoperator.dev/catalog/helm.toolkit.fluxcd.io/helmrelease_v2.json
+200 https://schemas.fluxoperator.dev/catalog/external-secrets.io/externalsecret_v1.json
+No other formerly bundled pair is missing.
+
+Wiring: autoInsertSchemas and createInsertSchemaCommandHandler (registered in extension.ts) build ResolverDeps without bundledEntries. applySchema.test.ts and the insertSchemaForCurrentDocument test in codeActions.test.ts run the REGISTERED commands of the activated extension, with a workspace additionalMappings override and the catalog disabled.
+
+AC verification:
+| AC | Evidence |
+| 1 | bundledMapping.ts, bundledMapping.test.ts and bundledMappingData.json deleted (git rm); Resolution has no 'bundled'; DIRECT_APPLY_SOURCES test asserts exactly fluxCatalog/override/sessionCache; removal rg above |
+| 2 | resolver.ts: MappingEntry + resolveOverride, order override -> catalog -> sessionCache -> unresolved; unit tests: resolveOverride known/unknown pair, override beats catalog, catalog not called on override hit, catalog beats session cache, session cache hit, unresolved; settings.ts imports MappingEntry from ./lib/resolver |
+| 3 | resolutionChain.test.ts A: full-file line equality (Warehouse override, Stage + ConfigMap catalog URLs, Kustomization and Widget untouched); requestedUrls deep-equals [index.json] |
+| 4 | resolutionChain B: only the Warehouse override is inserted; requestedUrls.length === 0 |
+| 5 | unit test: native Kustomization unresolved with no override; demo A/B leave it untouched; no schema data in src/package.json/dist |
+| 6 | resolutionChain C: the Kustomization doc gets https://json.schemastore.org/kustomization.json; Widget untouched |
+| 7 | applySchema.test.ts comment mode + yamlSchemas mode via the registered insertSchema command with a workspace override and the catalog disabled; codeActions insertSchemaForCurrentDocument likewise. Negative: insertSchemaCommandBranches "catalog disabled, no override" reaches the manual prompt, inserts nothing, and fetches nothing |
+| 8 | README: final chain, "Schema sources" (no embedded schemas, 24h cached index in global state, reused offline, no lookups while typing, unresolved until mapped), "Kinds the catalog does not cover" with the example verbatim, settings table with enableFluxCatalog, reworded limitations; README rg shows no matches |
+| 9 | CHANGELOG "## 0.3.0 (BREAKING)": new source + order, direct apply/autoInsert, 24h cache/offline/never per edit, enableFluxCatalog, REMOVED bundled mapping (53 entries), GitHub heuristic + confirmation prompt, CRDs-catalog fallback, both settings. No migration notes |
+| 10 | package.json version 0.3.0; package-lock.json root "version" fields are both 0.3.0 (npm version --no-git-tag-version); additionalMappings description rewritten as specified; no tag |
+| 11 | smoke above: 52/53 resolve, only native Kustomization is undefined; 3 URLs return 200 |
+| 12 | all gates green above; LEARNINGS line below |
+
+Notes: I added one extra fixture beyond the story's list, test/fixtures/catalog-disabled-manual-branch.yaml, so the manual-path test does not share an in-memory document with another test (see LEARNINGS). Test-only helpers setStageOverride, setAdditionalMappings and clearAdditionalMappings were added to test/integration/testUtils.ts. The VS Code test host prints DEP0169 url.parse deprecation warnings and "[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts". Both come from the VS Code 1.147 host process, not from extension code; nothing in src calls url.parse.
+
+LEARNINGS:
+- Vault decision 'Prefer First-Party Sources for Schema Lookups' is superseded: the Flux schema catalog (built from upstream CRDs at tagged releases) is now the only shipped source and the extension embeds no schemas; aggregator-as-fallback ordering no longer applies. Update the vault decision note.
+- Integration tests that open the same fixture share ONE in-memory TextDocument for the whole VS Code test-host session. An edit made by one test (even a failing one) makes the document "covered" for the next, which can produce a false GREEN. My first RED run showed this: the retargeted catalog-off autoInsert test passed only because another test had already inserted into the same fixture. Give every test that mutates a document its own fixture file.
+- Keep the story's removal rg in mind when writing tests: a schemastore URL in a src/lib unit test would break the "no matches in src" proof, so unit tests use placeholder override URLs and only the scenario C demo uses the real README URL.
+- The pvg guard blocks `cd` into the worktree, even inside a compound command. Absolute paths with `npm --prefix` and `git -C` work fine. The worktree also needs its own `npm ci`, since node_modules is not shared.
+- `pvg verify` takes `--format text` (with a space); `--format=text` is rejected as an unknown flag.
