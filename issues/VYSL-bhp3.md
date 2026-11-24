@@ -4,7 +4,7 @@ title: "Release 0.3.0 with the bundled mapping removed"
 status: in_progress
 priority: 1
 type: task
-labels: [capstone]
+labels: [capstone, delivered]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:30:01Z
 created_by: ada
