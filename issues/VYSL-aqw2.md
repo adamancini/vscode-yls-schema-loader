@@ -7,8 +7,8 @@ type: task
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
-updated_at: 2026-11-24T16:30:19Z
-content_hash: "sha256:886b9885d5d76a81c4d16c446ab4f621a6361b847031931de06b79ec045d97d6"
+updated_at: 2026-11-24T16:34:02Z
+content_hash: "sha256:a1b8e9cc0c7343b75e9448a8d9cf04aadfaeb4f5d9942164620002eb46bf2661"
 blocked_by: [VYSL-70kn]
 blocks: [VYSL-bhp3]
 ---
@@ -38,13 +38,13 @@ IMPLEMENTATION:
 1. Delete files: src/lib/githubDiscovery.ts, src/lib/githubDiscovery.test.ts, src/lib/repoHeuristic.ts, src/lib/repoHeuristic.test.ts, src/lib/crdsCatalogDiscovery.ts, src/lib/crdsCatalogDiscovery.test.ts, src/githubAuth.ts, src/confirmCandidate.ts, test/integration/confirmCandidate.test.ts, and the fixtures test/fixtures/auto-insert-crds-catalog.yaml, test/fixtures/auto-insert-github-only.yaml, test/fixtures/crds-catalog-branch.yaml, test/fixtures/github-branch-accept.yaml, test/fixtures/github-branch-reject.yaml.
 2. Move the FetchFn type, unchanged, into src/lib/fluxCatalog.ts and export it from there:
    export type FetchFn = (url: string, init?: { headers?: Record<string, string> }) => Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }>;
-3. src/lib/resolver.ts: Resolution becomes exactly
+3. src/lib/resolver.ts: Resolution becomes
    | { source: 'override'; url: string } | { source: 'fluxCatalog'; url: string } | { source: 'bundled'; url: string } | { source: 'sessionCache'; url: string } | { source: 'unresolved' }
    ResolverDeps becomes exactly { overrideEntries, bundledEntries, sessionCache, lookupFluxCatalog }. Remove enableWebDiscovery, githubHints, fetchFn, getAuthToken, the try/catch tail and both discovery imports. DIRECT_APPLY_SOURCES drops 'crdsCatalog'.
 4. src/insertSchemaCommand.ts: remove the Retry loop, the `github` branch, the confirmCandidate and fetchFn overrides and their imports. InsertSchemaCommandOverrides keeps only promptManualUrl. Flow: direct-apply source -> apply and record in the session cache; otherwise ('unresolved') -> manual URL prompt -> apply if a value is entered; then refresh diagnostics.
 5. src/autoInsert.ts: remove the AutoInsertOverrides parameter (it only carried fetchFn), getGithubAuthToken, getEnableWebDiscovery, getGithubRepoHints. Signature becomes autoInsertSchemas(document, sessionCache, fluxCatalog). Keep the bottom-to-top loop untouched.
 6. src/settings.ts: remove getEnableWebDiscovery, getGithubRepoHints and the RepoHint import.
-7. package.json contributes.configuration: remove ylsSchemaLoader.enableWebDiscovery and ylsSchemaLoader.githubRepoHints. Rewrite the ylsSchemaLoader.autoInsert description so it no longer mentions the CRDs-catalog or GitHub: "Automatically insert a schema as soon as one is resolved when a document is opened, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the bundled mapping, the session cache). Off by default."
+7. package.json contributes.configuration: remove ylsSchemaLoader.enableWebDiscovery and ylsSchemaLoader.githubRepoHints. Rewrite the ylsSchemaLoader.autoInsert description so it no longer mentions the CRDs-catalog or GitHub: "Automatically insert a schema as soon as one is resolved when a document is opened, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache). Off by default."
 8. src/extension.ts: fix the comment above handleDocumentOpen, which still names GitHub discovery and the CRDs-catalog. Do not change any event subscription.
 9. Tests: src/lib/resolver.test.ts drop the GitHub, CRDs-catalog, rate-limit, network-error and getAuthToken tests and fix baseDeps; test/integration/settings.test.ts drop the getGithubAuthToken suite and the removed defaults; test/integration/autoInsert.test.ts drop the CRDs-catalog and GitHub-only tests and their fetch stubs; test/integration/insertSchemaCommandBranches.test.ts drop the `github branch` and `crdsCatalog branch` suites, keep the `unresolved branch` suite and give it a catalog that does not list the Widget kind.
 
@@ -53,7 +53,7 @@ Delete: the 14 files listed in step 1.
 Modify: src/lib/fluxCatalog.ts, src/lib/resolver.ts, src/lib/resolver.test.ts, src/insertSchemaCommand.ts, src/autoInsert.ts, src/settings.ts, src/extension.ts, package.json, test/integration/settings.test.ts, test/integration/autoInsert.test.ts, test/integration/insertSchemaCommandBranches.test.ts.
 
 OUT OF SCOPE:
-- Pruning src/lib/bundledMappingData.json (many entries still point at raw.githubusercontent.com/datreeio/CRDs-catalog URLs; that is data, not the discovery stage): final story.
+- Removing the bundled mapping (src/lib/bundledMapping.ts and src/lib/bundledMappingData.json, whose entries still point at raw.githubusercontent.com/datreeio/CRDs-catalog URLs; that is data, not the discovery stage): the final story deletes it entirely. Leave it working here.
 - README.md, CHANGELOG.md, version bump: final story.
 - Honoring a leftover enableWebDiscovery=false as a catalog opt-out: the user chose a dedicated enableFluxCatalog setting; the removal is called out in the changelog by the final story. Never.
 - Historical documents under docs/superpowers/: they record past plans and are not user documentation. Never.
@@ -78,7 +78,7 @@ CONSUMES:
 
 PRODUCES:
 - src/lib/fluxCatalog.ts -> exported type FetchFn (moved from the deleted githubDiscovery.ts, signature unchanged).
-- src/lib/resolver.ts -> final Resolution union (override | fluxCatalog | bundled | sessionCache | unresolved) and final ResolverDeps { overrideEntries, bundledEntries, sessionCache, lookupFluxCatalog }.
+- src/lib/resolver.ts -> Resolution union (override | fluxCatalog | bundled | sessionCache | unresolved) and ResolverDeps { overrideEntries, bundledEntries, sessionCache, lookupFluxCatalog }; the bundled members are removed by the final story.
 - src/insertSchemaCommand.ts -> createInsertSchemaCommandHandler(sessionCache, diagnostics, fluxCatalog, overrides?: { promptManualUrl? }).
 - src/autoInsert.ts -> autoInsertSchemas(document, sessionCache, fluxCatalog).
 - src/settings.ts -> settings surface without getEnableWebDiscovery / getGithubRepoHints.
