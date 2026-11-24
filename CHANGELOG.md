@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.0
+
+- Behavior change: in `comment` and `both` insertion modes, a file matched by
+  `yaml.schemas` is no longer silently treated as done when a document in it
+  lacks an inline directive.
+- Such a document gets the info diagnostic "Schema is associated via
+  yaml.schemas but the inline directive is missing." and the quick-fix
+  "Restore yaml-language-server schema directive". With `autoInsert` on, the
+  directive is restored on open, above every document that lacks one.
+- The restore writes only the comment, never `yaml.schemas`, and needs no
+  catalog or network. `yamlSchemas` mode offers and inserts nothing.
+- URL choice: an exact path beats a glob, then more literal leading directory
+  segments, then the lexically smallest pattern, then the smallest URL.
+- A broad mapping such as `**/*.yaml` restores the directive in every
+  matching file you open. Only `http(s)://` and `file:` keys are restored;
+  aliases such as `kubernetes` are skipped.
+
 ## 0.3.3
 
 - Fix: choosing the quick-fix from the diagnostic hover's "Quick Fix…" menu

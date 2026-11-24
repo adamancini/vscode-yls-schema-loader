@@ -1,13 +1,15 @@
 import * as vscode from 'vscode';
-import { DIAGNOSTIC_SOURCE } from './diagnosticsProvider';
+import { DIAGNOSTIC_SOURCE, RESTORE_DIAGNOSTIC_CODE } from './diagnosticsProvider';
 import { INSERT_SCHEMA_COMMAND } from './commandIds';
 import { parseKindApiVersions } from './lib/yamlDocParser';
 import { resolveSchema, ResolverDeps, DIRECT_APPLY_SOURCES } from './lib/resolver';
 import { FluxCatalog } from './lib/fluxCatalog';
 import { buildSchemaCommentEdit, insertionModeWritesComment } from './applySchema';
-import { getAdditionalMappings, getInsertionMode } from './settings';
+import { settingsSchemaUrl } from './lib/coverageCheck';
+import { getAdditionalMappings, getInsertionMode, getYamlSchemas } from './settings';
 
 const ACTION_TITLE = 'Insert yaml-language-server schema';
+const RESTORE_ACTION_TITLE = 'Restore yaml-language-server schema directive';
 
 export class SchemaCodeActionProvider implements vscode.CodeActionProvider {
   constructor(
@@ -21,7 +23,14 @@ export class SchemaCodeActionProvider implements vscode.CodeActionProvider {
     context: vscode.CodeActionContext
   ): Promise<vscode.CodeAction[]> {
     const diagnostics = context.diagnostics.filter((diagnostic) => diagnostic.source === DIAGNOSTIC_SOURCE);
-    return Promise.all(diagnostics.map((diagnostic) => this.createAction(document, diagnostic, context.triggerKind)));
+    const actions = await Promise.all(
+      diagnostics.map((diagnostic) =>
+        diagnostic.code === RESTORE_DIAGNOSTIC_CODE
+          ? createRestoreAction(document, diagnostic)
+          : this.createAction(document, diagnostic, context.triggerKind)
+      )
+    );
+    return actions.filter((action): action is vscode.CodeAction => action !== undefined);
   }
 
   private async createAction(
@@ -79,4 +88,21 @@ export class SchemaCodeActionProvider implements vscode.CodeActionProvider {
       return undefined;
     }
   }
+}
+
+// The restore URL comes straight from yaml.schemas, so the edit is local and cheap on every
+// trigger kind: no resolution, no catalog, no command (the hover menu would drop it anyway).
+// Undefined when settings no longer map the file to a usable URL.
+function createRestoreAction(
+  document: vscode.TextDocument,
+  diagnostic: vscode.Diagnostic
+): vscode.CodeAction | undefined {
+  const url = settingsSchemaUrl(vscode.workspace.asRelativePath(document.uri, false), getYamlSchemas());
+  if (url === undefined) {
+    return undefined;
+  }
+  const action = new vscode.CodeAction(RESTORE_ACTION_TITLE, vscode.CodeActionKind.QuickFix);
+  action.diagnostics = [diagnostic];
+  action.edit = buildSchemaCommentEdit(document.uri, diagnostic.range.start.line, url);
+  return action;
 }

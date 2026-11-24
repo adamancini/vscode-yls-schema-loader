@@ -25,16 +25,48 @@ automates the lookup.
   Every resolved source applies directly. When nothing resolves a document,
   the quick-fix asks you for a URL.
 
-- **Never edits silently.** An uncovered document gets an info diagnostic and
-  a quick-fix. The extension writes nothing until you act, unless you turn
-  on auto-insert.
+- **Never edits silently.** An uncovered document, or one whose `yaml.schemas`
+  directive is missing (see below), gets an info diagnostic and a quick-fix.
+  The extension writes nothing until you act, unless you turn on auto-insert.
 - **Two ways to apply a fix:** the quick-fix on the diagnostic, or the
   command palette's _YLS Schema Loader: Insert Schema for Current Document_,
   which resolves the document your cursor is in.
 - **Opt-in auto-insert** (`ylsSchemaLoader.autoInsert`, off by default): when
   you open a document that resolves through any source above, the extension
   inserts the schema immediately, with no diagnostic, quick-fix, or click. It
-  runs only on document open, never on keystrokes.
+  also restores missing `yaml.schemas` directives (see below). It runs only on
+  document open, never on keystrokes.
+- **Restores a missing directive** for files you mapped in `yaml.schemas`
+  (`comment` or `both` insertion mode only). A document with no inline
+  directive in a file matched by a `yaml.schemas` pattern gets the info
+  diagnostic "Schema is associated via yaml.schemas but the inline directive
+  is missing." and the quick-fix "Restore yaml-language-server schema
+  directive". With auto-insert on, the directive is restored when the file
+  opens, above every document in a multi-document file that lacks one. The
+  restore writes only the comment and never changes `yaml.schemas`. In
+  `yamlSchemas` mode nothing is offered or inserted. Deleting the directive
+  while the file is open shows the diagnostic again, but auto-insert does not
+  re-insert it until you open the file again.
+
+### Which `yaml.schemas` URL is restored
+
+Only keys that are `http://`, `https://` or `file:` URLs are restored. Aliases
+such as `kubernetes` and schema paths are skipped, because yaml-language-server
+would resolve such a directive value as a file relative to the document and
+validation would break. When several entries match a file, the URL is chosen
+in this order:
+
+1. An exact path beats any glob.
+2. Among globs, the pattern with more literal leading directory segments
+   before the first glob character wins: `apps/team-ada/kargo/*.yaml` (3)
+   beats `apps/**/*.yaml` (1), which beats `*.yaml` or `**/*.yaml` (0).
+3. Then the lexically smallest pattern, then the lexically smallest URL.
+
+> **Broad patterns apply everywhere.** A catch-all mapping such as
+> `"https://example.com/k8s.json": "**/*.yaml"` offers the directive, and with
+> auto-insert inserts it, in every matching file you open. This extension
+> matches patterns against the workspace-relative path, so `*.yaml` matches
+> only files at the workspace root, while `**/*.yaml` matches every YAML file.
 
 ## Schema sources
 
@@ -65,12 +97,12 @@ kind, add this to your settings:
 
 ## Extension Settings
 
-| Setting                              | Type                                   | Default     | Description                                                                                                                                  |
-| ------------------------------------ | -------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ylsSchemaLoader.insertionMode`      | `"comment" \| "yamlSchemas" \| "both"` | `"comment"` | What a resolved schema writes: an inline comment, a `yaml.schemas` entry, or both.                                                           |
-| `ylsSchemaLoader.enableFluxCatalog`  | `boolean`                              | `true`      | Resolve schemas from the Flux schema catalog. Turn off in air-gapped environments to block all requests to schemas.fluxoperator.dev.         |
-| `ylsSchemaLoader.autoInsert`         | `boolean`                              | `false`     | Insert any resolved schema (from your additionalMappings, the Flux schema catalog, or the session cache) on document open, without a prompt. |
-| `ylsSchemaLoader.additionalMappings` | `{ kind, apiVersion, url }[]`          | `[]`        | Your own kind/apiVersion to schema URL mappings, checked before the Flux schema catalog.                                                     |
+| Setting                              | Type                                   | Default     | Description                                                                                                                                                                                 |
+| ------------------------------------ | -------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ylsSchemaLoader.insertionMode`      | `"comment" \| "yamlSchemas" \| "both"` | `"comment"` | What a resolved schema writes: an inline comment, a `yaml.schemas` entry, or both.                                                                                                          |
+| `ylsSchemaLoader.enableFluxCatalog`  | `boolean`                              | `true`      | Resolve schemas from the Flux schema catalog. Turn off in air-gapped environments to block all requests to schemas.fluxoperator.dev.                                                        |
+| `ylsSchemaLoader.autoInsert`         | `boolean`                              | `false`     | Insert any resolved schema (from your additionalMappings, the Flux schema catalog, or the session cache) on document open, without a prompt, and restore missing `yaml.schemas` directives. |
+| `ylsSchemaLoader.additionalMappings` | `{ kind, apiVersion, url }[]`          | `[]`        | Your own kind/apiVersion to schema URL mappings, checked before the Flux schema catalog.                                                                                                    |
 
 ## Requirements
 
@@ -87,8 +119,9 @@ kind, add this to your settings:
   additionalMappings or the Flux schema catalog, not `kubectl get crd`.
 - With `ylsSchemaLoader.enableFluxCatalog` off, only your additionalMappings
   resolve (plus URLs you already entered this session).
-- Acts only on documents with **no** existing schema association; it neither
-  detects a stale one nor offers to replace it.
+- Never detects a stale inline directive or replaces an existing one. The
+  `yaml.schemas` restore applies only to documents with `kind` and
+  `apiVersion`.
 
 ## Development
 

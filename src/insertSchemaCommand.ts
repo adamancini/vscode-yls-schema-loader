@@ -3,9 +3,10 @@ import { DiagnosticsProvider } from './diagnosticsProvider';
 import { parseKindApiVersions } from './lib/yamlDocParser';
 import { resolveSchema, sessionCacheKey, ResolverDeps, DIRECT_APPLY_SOURCES } from './lib/resolver';
 import { FluxCatalog } from './lib/fluxCatalog';
-import { applyResolution } from './applySchema';
+import { applyResolution, insertionModeWritesComment } from './applySchema';
 import { schemaCommentLine } from './lib/commentInsertion';
-import { getInsertionMode, getAdditionalMappings } from './settings';
+import { coverageState } from './lib/coverageCheck';
+import { getInsertionMode, getAdditionalMappings, getYamlSchemas } from './settings';
 
 // Overridable seam for testing: the real prompt is VS Code UI, which a headless integration
 // test can't drive. Tests construct the handler with a stub instead of the default
@@ -64,6 +65,21 @@ export function createInsertSchemaCommandHandler(
       // document without one.
       const inPlace = document.lineAt(targetStartLine).text === schemaCommentLine(resolvedUrl);
       await applyAndTrack(resolvedUrl, inPlace);
+      diagnostics.refresh(document);
+      return;
+    }
+
+    // A document yaml.schemas already maps to a URL only lacks its inline directive: put
+    // that URL back as a comment (also in both mode), with no lookup, prompt or cache write.
+    const coverage = coverageState(
+      text,
+      targetStartLine,
+      vscode.workspace.asRelativePath(document.uri, false),
+      getYamlSchemas(),
+      insertionModeWritesComment(insertionMode)
+    );
+    if (coverage.state === 'restorable') {
+      await applyResolution(document, targetStartLine, coverage.url, 'comment');
       diagnostics.refresh(document);
       return;
     }
