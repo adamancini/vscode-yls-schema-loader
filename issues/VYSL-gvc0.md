@@ -6,8 +6,9 @@ priority: 1
 type: epic
 created_at: 2026-11-24T16:26:35Z
 created_by: ada
-updated_at: 2026-11-24T16:26:35Z
+updated_at: 2026-11-24T16:27:45Z
 content_hash: "sha256:ffc9a723c1a72f95579de41b832d4fb8ab1c05ea3801d788c1d898b56230a700"
+labels: [milestone]
 ---
 
 ## Description
