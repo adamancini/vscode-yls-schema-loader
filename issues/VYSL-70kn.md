@@ -9,10 +9,11 @@ parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
 updated_at: 2026-11-24T17:15:31Z
-content_hash: "sha256:9bc4cc6fe3845a42e5caeb14be578aad716d9736a8a62d8e5d67e805879b8e64"
+content_hash: "sha256:9b325e17f1e75e2e004841aee5826f3b70a038d2e6d61d6db63041b31a8ba084"
 assignee: dev-VYSL-70kn
 closed_at: 2026-11-24T17:15:27Z
 close_reason: "Accepted via pvg story accept"
+led_to: [VYSL-aqw2]
 ---
 
 ## Description
@@ -178,6 +179,7 @@ status: delivered
 
 ## Links
 - Parent: [[VYSL-gvc0]]
+- Led to: [[VYSL-aqw2]]
 
 ## Comments
 

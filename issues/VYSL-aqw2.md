@@ -1,16 +1,18 @@
 ---
 id: VYSL-aqw2
 title: "Remove GitHub heuristic discovery, CRDs-catalog fallback stages"
-status: open
+status: in_progress
 priority: 1
 type: task
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:28:45Z
 created_by: ada
-updated_at: 2026-11-24T17:03:16Z
-content_hash: "sha256:a9674763c0a5f5a77df260aa387fa26ce73fb2ae473e0bcf4fb6198139d374b4"
+updated_at: 2026-11-24T17:16:40Z
+content_hash: "sha256:45aab75a03a03568e5504a748403fd4971bb3ea8d845dc819f36d687163a288b"
 blocks: [VYSL-bhp3]
 was_blocked_by: [VYSL-70kn]
+assignee: dev-VYSL-aqw2
+follows: [VYSL-70kn]
 ---
 
 ## Description
@@ -125,10 +127,14 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 - 2026-11-24T16:28:46Z dep_added: blocked_by VYSL-70kn
 - 2026-11-24T16:30:01Z dep_added: blocks VYSL-bhp3
 - 2026-11-24T17:15:27Z dep_removed: was_blocked_by VYSL-70kn
+- 2026-11-24T17:16:40Z status: open -> in_progress
+- 2026-11-24T17:16:41Z auto-follows: linked to predecessor VYSL-70kn
+- 2026-11-24T17:16:41Z claimed by dev-VYSL-aqw2
 
 ## Links
 - Parent: [[VYSL-gvc0]]
 - Blocks: [[VYSL-bhp3]]
 - Was blocked by: [[VYSL-70kn]]
+- Follows: [[VYSL-70kn]]
 
 ## Comments
