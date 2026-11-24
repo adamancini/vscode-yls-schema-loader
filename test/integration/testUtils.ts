@@ -1,8 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { CachedCatalog, createFluxCatalog, FLUX_CATALOG_INDEX_URL, FluxCatalog } from '../../src/lib/fluxCatalog';
-import { FetchFn } from '../../src/lib/githubDiscovery';
+import {
+  CachedCatalog,
+  createFluxCatalog,
+  FetchFn,
+  FLUX_CATALOG_INDEX_URL,
+  FluxCatalog,
+} from '../../src/lib/fluxCatalog';
 
 /**
  * Poll `predicate` until it returns true, or throw once `timeoutMs` elapses.

@@ -48,15 +48,10 @@
           "default": true,
           "description": "Resolve schemas from the Flux schema catalog (https://schemas.fluxoperator.dev/catalog/). Its index is downloaded at most once a day and cached. Turn this off in air-gapped environments to prevent any request to schemas.fluxoperator.dev."
         },
-        "ylsSchemaLoader.enableWebDiscovery": {
-          "type": "boolean",
-          "default": true,
-          "description": "Search GitHub for a matching schema when no bundled mapping or cached resolution exists."
-        },
         "ylsSchemaLoader.autoInsert": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically insert a schema as soon as one is resolved, with no confirmation prompt -- for any source that would otherwise apply directly (bundled mapping, session cache, or the CRDs-catalog fallback). GitHub-heuristic candidates still require manual confirmation. Off by default."
+          "description": "Automatically insert a schema as soon as one is resolved when a document is opened, with no confirmation prompt. Applies to every resolved source (your additionalMappings, the Flux schema catalog, the session cache). Off by default."
         },
         "ylsSchemaLoader.additionalMappings": {
           "type": "array",
@@ -78,28 +73,6 @@
               },
               "url": {
                 "type": "string"
-              }
-            }
-          }
-        },
-        "ylsSchemaLoader.githubRepoHints": {
-          "type": "array",
-          "default": [],
-          "description": "Explicit apiVersion-group to org/repo overrides for cases the GitHub heuristic guesses wrong.",
-          "items": {
-            "type": "object",
-            "required": [
-              "group",
-              "repo"
-            ],
-            "properties": {
-              "group": {
-                "type": "string",
-                "description": "The apiVersion group, e.g. kargo.akuity.io"
-              },
-              "repo": {
-                "type": "string",
-                "description": "org/repo, e.g. akuity/kargo"
               }
             }
           }

@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { autoInsertSchemas } from '../../src/autoInsert';
-import { ResolverDeps } from '../../src/lib/resolver';
 import { createFixtureFluxCatalog, disableActivatedFluxCatalog, restoreFluxCatalogSetting } from './testUtils';
 
 const STAGE_SCHEMA_URL =
@@ -16,29 +15,8 @@ function fixtureUri(name: string): vscode.Uri {
   return vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', name));
 }
 
-// GitHub discovery 404s everywhere, but the CRDs-catalog URL hits.
-const crdsCatalogHitFetchFn: ResolverDeps['fetchFn'] = async (url: string) => {
-  if (url === 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/widgets.example.com/widget_v1.json') {
-    return { ok: true, status: 200, json: async () => ({}) };
-  }
-  return { ok: false, status: 404, json: async () => ({}) };
-};
-
-// A conventional GitHub Contents API path hits, so resolution lands on `github` --
-// a source auto-insert must never apply on its own.
-const githubOnlyFetchFn: ResolverDeps['fetchFn'] = async (url: string) => {
-  if (url === 'https://api.github.com/repos/example/widgets/contents/schemas.json') {
-    return {
-      ok: true,
-      status: 200,
-      json: async () => ({ download_url: 'https://raw.githubusercontent.com/example/widgets/HEAD/schemas.json' }),
-    };
-  }
-  return { ok: false, status: 404, json: async () => ({}) };
-};
-
-// The existing (bundled / CRDs-catalog / GitHub) scenarios run with the catalog switched off,
-// so they keep exercising the stages behind it.
+// The bundled-mapping scenarios run with the catalog switched off, so they keep exercising
+// the stage behind it.
 const disabledCatalog = () => createFixtureFluxCatalog(false).catalog;
 
 async function enableAutoInsert(): Promise<void> {
@@ -49,7 +27,7 @@ async function enableAutoInsert(): Promise<void> {
 
 // Every test opens its document BEFORE switching autoInsert on: the activated extension's own
 // open handler checks that setting synchronously, so it leaves the document alone and only the
-// call under test (with its stubbed fetchFn / injected catalog) resolves it -- no real network.
+// call under test (with its injected catalog) resolves it -- no real network.
 suite('autoInsertSchemas', () => {
   setup(disableActivatedFluxCatalog);
   teardown(async () => {
@@ -84,39 +62,19 @@ suite('autoInsertSchemas', () => {
     assert.strictEqual(sessionCache.get('kargo.akuity.io/v1alpha1::Stage'), STAGE_SCHEMA_URL);
   });
 
-  test('applies a CRDs-catalog match automatically when enabled', async () => {
-    const uri = fixtureUri('auto-insert-crds-catalog.yaml');
-    const doc = await vscode.workspace.openTextDocument(uri);
-    await enableAutoInsert();
-    await autoInsertSchemas(doc, new Map(), disabledCatalog(), { fetchFn: crdsCatalogHitFetchFn });
-    assert.strictEqual(
-      doc.lineAt(0).text,
-      '# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/widgets.example.com/widget_v1.json'
-    );
-  });
-
-  test('does not apply a GitHub-only match -- leaves the document for manual confirmation', async () => {
-    const uri = fixtureUri('auto-insert-github-only.yaml');
-    const doc = await vscode.workspace.openTextDocument(uri);
-    await enableAutoInsert();
-    const originalFirstLine = doc.lineAt(0).text;
-    await autoInsertSchemas(doc, new Map(), disabledCatalog(), { fetchFn: githubOnlyFetchFn });
-    assert.strictEqual(doc.lineAt(0).text, originalFirstLine);
-  });
-
   test('does not apply anything when nothing resolves -- leaves the document unresolved', async () => {
     const uri = fixtureUri('auto-insert-unresolved.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
     await enableAutoInsert();
     const originalFirstLine = doc.lineAt(0).text;
+    const originalText = doc.getText();
     const sessionCache = new Map<string, string>();
-    const nothingFoundFetchFn: ResolverDeps['fetchFn'] = async () => ({
-      ok: false,
-      status: 404,
-      json: async () => ({}),
-    });
-    await autoInsertSchemas(doc, sessionCache, disabledCatalog(), { fetchFn: nothingFoundFetchFn });
+    // The fixture catalog index does not list widgets.example.com/v1 Widget.
+    const { catalog, requestedUrls } = createFixtureFluxCatalog();
+    await autoInsertSchemas(doc, sessionCache, catalog);
     assert.strictEqual(doc.lineAt(0).text, originalFirstLine);
+    assert.strictEqual(doc.getText(), originalText);
+    assert.deepStrictEqual(requestedUrls, ['https://schemas.fluxoperator.dev/index.json']);
     assert.strictEqual(sessionCache.size, 0);
   });
 
