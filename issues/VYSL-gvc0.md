@@ -1,14 +1,16 @@
 ---
 id: VYSL-gvc0
 title: "Flux schema catalog as first-class schema source"
-status: open
+status: closed
 priority: 1
 type: epic
 created_at: 2026-11-24T16:26:35Z
 created_by: ada
-updated_at: 2026-11-24T16:34:01Z
-content_hash: "sha256:b67eb66c96b522d01d8f99d8ee0d3e423e4dd3ac8c1a971a79555e62193e9362"
+updated_at: 2026-11-24T18:05:15Z
+content_hash: "sha256:55f7a4c60ef7bb2a169dcd6f143f20af8f77e17473fbc45b5f8bcfd14b420f8a"
 labels: [milestone]
+closed_at: 2026-11-24T18:05:15Z
+close_reason: "All stories accepted, gate passed: full suite green, Anchor VALIDATED, merged to main 5ad4cd1"
 ---
 
 ## Description
@@ -65,7 +67,7 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 
 
 ## History
-
+- 2026-11-24T18:05:15Z status: open -> closed
 
 ## Links
 
