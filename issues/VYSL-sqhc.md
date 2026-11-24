@@ -8,8 +8,8 @@ labels: [walking-skeleton]
 parent: VYSL-0jlx
 created_at: 2026-11-24T19:13:54Z
 created_by: ada
-updated_at: 2026-11-24T19:13:54Z
-content_hash: "sha256:1122542241b5f8e8196b8e6eda31116dc59d4e233634cfe0881fa1fc6486ce63"
+updated_at: 2026-11-24T19:15:04Z
+content_hash: "sha256:841384b84a78be787bcfbd9f88b66514c50a264ae3d0e41f9815f0a12a4fbd0a"
 blocks: [VYSL-uk3t]
 ---
 
@@ -114,6 +114,14 @@ Scenarios:
 - command on a restorable document, comment mode: settings URL inserted, catalog not consulted (counting catalog: zero lookups) even though the fixture catalog knows the kind, manual prompt not called, session cache still empty
 - command on a restorable document, both mode: comment inserted and `yaml.schemas` deep-equals its value from before the command
 
+PROCESS (applies to every step):
+- Work only in the dispatcher-managed worktree named in your prompt's `Work in:` line. The pvg guard blocks `cd` into worktrees, even inside compound commands: use absolute paths, `git -C <abs-worktree>` and `npm --prefix <abs-worktree>`.
+- Run `npm --prefix <abs-worktree> ci` first; node_modules is not shared between worktrees. The first `npm test` in a fresh worktree downloads VS Code and redhat.vscode-yaml into the worktree's .vscode-test directory (existing harness behavior).
+- Never stage anything under `.vault/`. Commit messages must not mention Claude.
+- No coverage tool is configured; report test counts, not a percentage.
+- VS Code test-host stderr noise (DEP0169 url.parse, AgentHostCustomizationMarketplace) comes from the host, not from extension code.
+- Gates, all green before delivery, run from a clean build because mocha globs compiled tests in out/ and stale files inflate counts: `npm run compile`, `npm run lint`, `npx prettier --check .`, `rm -rf out dist && npm test`. Report the unit and integration test counts before and after (baseline on main @ a451edf: record it from your own clean run) and explain the delta.
+
 Acceptance Criteria:
 1. [State] While `ylsSchemaLoader.insertionMode` is `comment` or `both`, a recognized document with no inline directive whose file matches a `yaml.schemas` pattern (exact relative path or glob) under an `http://`, `https://` or `file:` key has an Information diagnostic with source `ylsSchemaLoader`, code `restoreDirective` and the exact message "Schema is associated via yaml.schemas but the inline directive is missing."
 2. [State] While `ylsSchemaLoader.insertionMode` is `yamlSchemas`, the same document has no diagnostic (today's behavior).
@@ -130,15 +138,6 @@ Acceptance Criteria:
 
 MANDATORY SKILLS TO REVIEW:
 superpowers:test-driven-development, superpowers:verification-before-completion
-
-
-PROCESS (applies to every step):
-- Work only in the dispatcher-managed worktree named in your prompt's `Work in:` line. The pvg guard blocks `cd` into worktrees, even inside compound commands: use absolute paths, `git -C <abs-worktree>` and `npm --prefix <abs-worktree>`.
-- Run `npm --prefix <abs-worktree> ci` first; node_modules is not shared between worktrees. The first `npm test` in a fresh worktree downloads VS Code and redhat.vscode-yaml into the worktree's .vscode-test directory (existing harness behavior).
-- Never stage anything under `.vault/`. Commit messages must not mention Claude.
-- No coverage tool is configured; report test counts, not a percentage.
-- VS Code test-host stderr noise (DEP0169 url.parse, AgentHostCustomizationMarketplace) comes from the host, not from extension code.
-- Gates, all green before delivery, run from a clean build because mocha globs compiled tests in out/ and stale files inflate counts: `npm run compile`, `npm run lint`, `npx prettier --check .`, `rm -rf out dist && npm test`. Report the unit and integration test counts before and after (baseline on main @ a451edf: record it from your own clean run) and explain the delta.
 
 ## Acceptance Criteria
 
