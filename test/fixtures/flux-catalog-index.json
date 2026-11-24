@@ -1,0 +1,83 @@
+{
+  "v": 4,
+  "generatedAt": "2026-11-24T00:00:00Z",
+  "categories": ["Kubernetes", "Observability", "Security", "Networking", "Delivery"],
+  "projects": [
+    {
+      "name": "kargo",
+      "alias": "Kargo",
+      "cat": 4,
+      "repo": "akuity/kargo",
+      "version": "v1.12.6",
+      "sha": "b13204661ebc",
+      "builtAt": "2026-11-20",
+      "groups": [
+        {
+          "g": "kargo.akuity.io",
+          "kinds": [
+            ["stage", ["v1alpha1"], 1, "Stage"],
+            ["warehouse", ["v1alpha1"], 1, "Warehouse"]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flux",
+      "alias": "Flux",
+      "cat": 4,
+      "repo": "fluxcd/flux2",
+      "version": "v2.10.1",
+      "sha": "23dcfe98fe67",
+      "builtAt": "2026-11-20",
+      "groups": [
+        {
+          "g": "kustomize.toolkit.fluxcd.io",
+          "kinds": [["kustomization", ["v1"], 1, "Kustomization", { "n": ["ks"] }]]
+        },
+        {
+          "g": "notification.toolkit.fluxcd.io",
+          "kinds": [
+            ["alert", ["v1", "v1beta3"], 3, "Alert"],
+            ["provider", ["v1", "v1beta3"], 3, "Provider"],
+            ["receiver", ["v1"], 1, "Receiver"]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "kubernetes",
+      "alias": "Kubernetes",
+      "cat": 0,
+      "repo": "kubernetes/kubernetes",
+      "version": "v1.37.2",
+      "groups": [
+        { "g": "core", "kinds": [["configmap", ["v1"], 1, "ConfigMap"]] },
+        { "g": "apps", "kinds": [["deployment", ["v1"], 1, "Deployment"]] }
+      ]
+    },
+    {
+      "name": "argo",
+      "alias": "Argo",
+      "cat": 4,
+      "sources": [
+        {
+          "name": "argo-cd",
+          "alias": "Argo CD",
+          "repo": "argoproj/argo-cd",
+          "version": "v3.6.2",
+          "sha": "8e8268ef2f3d",
+          "builtAt": "2026-11-20"
+        }
+      ],
+      "groups": [
+        {
+          "g": "argoproj.io",
+          "kinds": [
+            ["applicationset", ["v1alpha1"], 1, "ApplicationSet", { "n": ["appset", "appsets"] }],
+            ["rollout", ["v1alpha1"], 1, "Rollout", { "n": ["ro"] }]
+          ]
+        }
+      ]
+    }
+  ]
+}

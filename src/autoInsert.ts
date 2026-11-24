@@ -1,33 +1,15 @@
 import * as vscode from 'vscode';
 import { parseKindApiVersions } from './lib/yamlDocParser';
 import { isCovered } from './lib/coverageCheck';
-import { resolveSchema, sessionCacheKey, Resolution, ResolverDeps } from './lib/resolver';
-import { mergeMappings } from './lib/bundledMapping';
-import bundledMappingData from './lib/bundledMappingData.json';
+import { resolveSchema, sessionCacheKey, ResolverDeps, DIRECT_APPLY_SOURCES } from './lib/resolver';
+import { FluxCatalog } from './lib/fluxCatalog';
 import { applyResolution } from './applySchema';
-import { getGithubAuthToken } from './githubAuth';
-import {
-  getAutoInsert,
-  getInsertionMode,
-  getEnableWebDiscovery,
-  getAdditionalMappings,
-  getGithubRepoHints,
-  getYamlSchemas,
-} from './settings';
-
-// Sources that already apply without a confirmation prompt when triggered manually --
-// auto-insert extends that same trust boundary to run without the user even opening the
-// quick-fix. A `github` resolution (ambiguous candidates) is deliberately excluded.
-const DIRECT_APPLY_SOURCES: ReadonlySet<Resolution['source']> = new Set(['bundled', 'sessionCache', 'crdsCatalog']);
-
-export interface AutoInsertOverrides {
-  fetchFn?: ResolverDeps['fetchFn'];
-}
+import { getAutoInsert, getInsertionMode, getAdditionalMappings, getYamlSchemas } from './settings';
 
 export async function autoInsertSchemas(
   document: vscode.TextDocument,
   sessionCache: Map<string, string>,
-  overrides: AutoInsertOverrides = {}
+  fluxCatalog: FluxCatalog
 ): Promise<void> {
   if (document.languageId !== 'yaml' || !getAutoInsert()) {
     return;
@@ -38,12 +20,9 @@ export async function autoInsertSchemas(
   const yamlSchemas = getYamlSchemas();
   const insertionMode = getInsertionMode();
   const deps: ResolverDeps = {
-    bundledEntries: mergeMappings(bundledMappingData, getAdditionalMappings()),
+    overrideEntries: getAdditionalMappings(),
+    lookupFluxCatalog: (kind, apiVersion) => fluxCatalog.lookup(kind, apiVersion),
     sessionCache,
-    enableWebDiscovery: getEnableWebDiscovery(),
-    githubHints: getGithubRepoHints(),
-    fetchFn: overrides.fetchFn ?? (fetch as ResolverDeps['fetchFn']),
-    getAuthToken: getGithubAuthToken,
   };
 
   // Bottom-to-top: inserting a comment above one document must not shift the line
@@ -53,6 +32,8 @@ export async function autoInsertSchemas(
     if (isCovered(text, doc.startLine, relativePath, yamlSchemas)) {
       continue;
     }
+    // Auto-insert applies direct-apply sources (resolver.ts) without the user even opening
+    // the quick-fix; an 'unresolved' document is left untouched, with no prompt.
     const resolution = await resolveSchema(doc.kind, doc.apiVersion, deps);
     if (!DIRECT_APPLY_SOURCES.has(resolution.source) || !('url' in resolution)) {
       continue;

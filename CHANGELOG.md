@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0 (BREAKING)
+
+- The [Flux schema catalog](https://schemas.fluxoperator.dev/catalog/) is now
+  the source of schemas. Resolver order: your
+  `ylsSchemaLoader.additionalMappings`, then the Flux schema catalog, then
+  the session cache, then unresolved.
+- Catalog matches apply directly and are eligible for `autoInsert`.
+- The catalog index is cached for 24 hours in VS Code global state, a stale
+  copy is used when offline, and it is never fetched per edit.
+- New setting `ylsSchemaLoader.enableFluxCatalog` (default `true`).
+- REMOVED: the bundled mapping (all 53 embedded entries). The extension
+  ships no schema data.
+- REMOVED: GitHub heuristic discovery and its confirmation prompt.
+- REMOVED: the datreeio/CRDs-catalog fallback.
+- REMOVED: settings `ylsSchemaLoader.enableWebDiscovery` and
+  `ylsSchemaLoader.githubRepoHints`.
+
 ## 0.2.7
 
 - Added `ylsSchemaLoader.autoInsert` (off by default): when enabled, a

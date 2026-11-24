@@ -1,4 +1,0 @@
-apiVersion: widgets.example.com/v1
-kind: Widget
-metadata:
-  name: github-branch-reject

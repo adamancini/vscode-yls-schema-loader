@@ -4,12 +4,20 @@ import * as vscode from 'vscode';
 import { SchemaCodeActionProvider } from '../../src/codeActionsProvider';
 import { DIAGNOSTIC_SOURCE } from '../../src/diagnosticsProvider';
 import { INSERT_SCHEMA_COMMAND } from '../../src/commandIds';
-import { waitFor } from './testUtils';
+import {
+  clearAdditionalMappings,
+  disableActivatedFluxCatalog,
+  restoreFluxCatalogSetting,
+  setStageOverride,
+  waitFor,
+} from './testUtils';
 
-const KARGO_STAGE_SCHEMA_URL =
-  'https://raw.githubusercontent.com/akuity/kargo/refs/heads/main/ui/src/gen/schema/stages.kargo.akuity.io_v1alpha1.json';
+const OVERRIDE_STAGE_SCHEMA_URL = 'https://override.example.com/stage.json';
 
 suite('SchemaCodeActionProvider', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('offers a quick-fix that invokes the insertSchema command for a matching diagnostic', async () => {
     const uri = vscode.Uri.parse('untitled:code-action-test.yaml');
     const doc = await vscode.workspace.openTextDocument(uri);
@@ -56,6 +64,9 @@ suite('SchemaCodeActionProvider', () => {
 });
 
 suite('SchemaCodeActionProvider (registered, headless)', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('vscode.executeCodeActionProvider returns the insert-schema quick-fix for the uncovered fixture', async () => {
     const uri = vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'uncovered.yaml'));
     const doc = await vscode.workspace.openTextDocument(uri);
@@ -75,6 +86,15 @@ suite('SchemaCodeActionProvider (registered, headless)', () => {
 });
 
 suite('insertSchemaForCurrentDocument command', () => {
+  setup(async () => {
+    await disableActivatedFluxCatalog();
+    await setStageOverride(OVERRIDE_STAGE_SCHEMA_URL);
+  });
+  teardown(async () => {
+    await restoreFluxCatalogSetting();
+    await clearAdditionalMappings();
+  });
+
   test('resolves the document under the cursor', async () => {
     const uri = vscode.Uri.file(
       path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'current-document-command.yaml')
@@ -83,7 +103,7 @@ suite('insertSchemaForCurrentDocument command', () => {
     const editor = await vscode.window.showTextDocument(doc);
     editor.selection = new vscode.Selection(1, 0, 1, 0);
     await vscode.commands.executeCommand('ylsSchemaLoader.insertSchemaForCurrentDocument');
-    const expectedLine = `# yaml-language-server: $schema=${KARGO_STAGE_SCHEMA_URL}`;
+    const expectedLine = `# yaml-language-server: $schema=${OVERRIDE_STAGE_SCHEMA_URL}`;
     await waitFor(() => doc.lineAt(0).text === expectedLine);
     assert.strictEqual(doc.lineAt(0).text, expectedLine);
   });

@@ -1,9 +1,12 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { staysFalseFor, waitFor } from './testUtils';
+import { disableActivatedFluxCatalog, restoreFluxCatalogSetting, staysFalseFor, waitFor } from './testUtils';
 
 suite('diagnostics', () => {
+  setup(disableActivatedFluxCatalog);
+  teardown(restoreFluxCatalogSetting);
+
   test('publishes a diagnostic for an uncovered document', async () => {
     const uri = vscode.Uri.file(path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'uncovered.yaml'));
     const doc = await vscode.workspace.openTextDocument(uri);
