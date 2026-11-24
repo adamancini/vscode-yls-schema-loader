@@ -1,16 +1,17 @@
 ---
 id: VYSL-70kn
 title: "Resolve schemas from the Flux schema catalog index"
-status: open
+status: in_progress
 priority: 1
 type: task
 labels: [walking-skeleton]
 parent: VYSL-gvc0
 created_at: 2026-11-24T16:27:51Z
 created_by: ada
-updated_at: 2026-11-24T16:34:01Z
-content_hash: "sha256:0e070eac3f8bb1b255b59d0d9c3329e150e0f746716cf652b04378f62c023658"
+updated_at: 2026-11-24T17:05:05Z
+content_hash: "sha256:62d16961a51024af532187efcb11c7e52464ef36401a0d9602c43a7fc587337c"
 blocks: [VYSL-aqw2, VYSL-bhp3]
+assignee: dev-VYSL-70kn
 ---
 
 ## Description
@@ -147,6 +148,8 @@ superpowers:test-driven-development, superpowers:verification-before-completion
 ## History
 - 2026-11-24T16:28:46Z dep_added: blocks VYSL-aqw2
 - 2026-11-24T16:30:01Z dep_added: blocks VYSL-bhp3
+- 2026-11-24T17:05:05Z status: open -> in_progress
+- 2026-11-24T17:05:05Z claimed by dev-VYSL-70kn
 
 ## Links
 - Parent: [[VYSL-gvc0]]
